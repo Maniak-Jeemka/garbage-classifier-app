@@ -1,6 +1,6 @@
-# workshop
+# garbage-classifier-app
 
-A new Flutter project.
+A Flutter project for classifying garbage into organic, non-organic, and residue bins.
 
 ## Getting Started
 
