@@ -1,0 +1,10 @@
+{
+  "version": 1,
+  "skills": {
+    "riverpod-best-practices": {
+      "source": "wahyubucil/agents",
+      "sourceType": "github",
+      "computedHash": "dbb78905cbd8c85a2e27b915e8420c575141cd86e54a0f77d67319b37492cd2b"
+    }
+  }
+}
