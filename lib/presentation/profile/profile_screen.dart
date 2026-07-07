@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../providers/history_provider.dart';
 import '../theme/app_theme.dart';
 import '../theme/clay_decoration.dart';
+import '../theme/custom_app_bar.dart';
 
 /// Displays user profile information, scan statistics,
 /// and app preferences.
@@ -16,15 +17,7 @@ class ProfileScreen extends ConsumerWidget {
     final theme = Theme.of(context);
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          'Profil Saya',
-          style: GoogleFonts.outfit(
-            fontWeight: FontWeight.bold,
-            color: theme.colorScheme.onSurface,
-          ),
-        ),
-      ),
+      appBar: const CustomAppBar(title: 'Profil Saya'),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(
@@ -122,6 +115,14 @@ class _ProfileHeader extends StatelessWidget {
                 ),
               ],
             ),
+          ),
+          IconButton(
+            icon: const Icon(Icons.edit_rounded, color: Color(0xFF0A1F00)),
+            onPressed: () {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Fitur edit profil belum tersedia')),
+              );
+            },
           ),
         ],
       ),
@@ -290,11 +291,11 @@ class _StatCard extends StatelessWidget {
   }
 }
 
-class _PreferencesSection extends StatelessWidget {
+class _PreferencesSection extends ConsumerWidget {
   const _PreferencesSection();
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
     final brightness = theme.brightness;
 
@@ -329,6 +330,48 @@ class _PreferencesSection extends StatelessWidget {
                       .colorScheme.onSurfaceVariant,
                   size: 20,
                 ),
+                onTap: () {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Pengaturan bahasa belum tersedia')),
+                  );
+                },
+              ),
+              const Divider(height: 1, indent: 54),
+              _PreferenceItem(
+                icon: Icons.delete_sweep_rounded,
+                title: 'Hapus Riwayat',
+                subtitle: 'Hapus semua data pindaian',
+                trailing: Icon(
+                  Icons.chevron_right_rounded,
+                  color: theme
+                      .colorScheme.error,
+                  size: 20,
+                ),
+                onTap: () {
+                  showDialog(
+                    context: context,
+                    builder: (context) => AlertDialog(
+                      title: const Text('Hapus Riwayat'),
+                      content: const Text('Anda yakin ingin menghapus semua riwayat klasifikasi?'),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.pop(context),
+                          child: const Text('Batal'),
+                        ),
+                        TextButton(
+                          onPressed: () {
+                            ref.read(historyProvider.notifier).clearHistory();
+                            Navigator.pop(context);
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('Riwayat berhasil dihapus')),
+                            );
+                          },
+                          child: const Text('Hapus'),
+                        ),
+                      ],
+                    ),
+                  );
+                },
               ),
             ],
           ),
@@ -343,25 +386,29 @@ class _PreferenceItem extends StatelessWidget {
   final String title;
   final String subtitle;
   final Widget trailing;
+  final VoidCallback onTap;
 
   const _PreferenceItem({
     required this.icon,
     required this.title,
     required this.subtitle,
     required this.trailing,
+    required this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(
-        horizontal: 16,
-        vertical: 14,
-      ),
-      child: Row(
-        children: [
+    return InkWell(
+      onTap: onTap,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 14,
+        ),
+        child: Row(
+          children: [
           Icon(
             icon,
             color: AppTheme.neonGreen,
@@ -395,6 +442,7 @@ class _PreferenceItem extends StatelessWidget {
           ),
           trailing,
         ],
+      ),
       ),
     );
   }

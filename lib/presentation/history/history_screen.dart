@@ -6,6 +6,7 @@ import '../../models/scan_record.dart';
 import '../../providers/history_provider.dart';
 import '../theme/app_theme.dart';
 import '../theme/clay_decoration.dart';
+import '../theme/custom_app_bar.dart';
 
 /// Displays the user's classification history with
 /// search, filters, and ecological impact stats.
@@ -28,14 +29,8 @@ class _HistoryScreenState
     final theme = Theme.of(context);
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          'Riwayat Klasifikasi',
-          style: GoogleFonts.outfit(
-            fontWeight: FontWeight.bold,
-            color: theme.colorScheme.onSurface,
-          ),
-        ),
+      appBar: CustomAppBar(
+        title: 'Riwayat Klasifikasi',
         actions: [
           IconButton(
             icon:
@@ -346,11 +341,11 @@ class _HistoryScreenState
           children: [
             Container(
               padding: const EdgeInsets.all(24),
-              decoration: ClayDecoration.elevated(
+              decoration: ClayDecoration.circle(
                 color: theme
                     .colorScheme.surfaceContainerHigh,
                 brightness: brightness,
-              ).copyWith(shape: BoxShape.circle),
+              ),
               child: Icon(
                 isHistoryFullyEmpty
                     ? Icons

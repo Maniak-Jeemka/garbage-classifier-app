@@ -9,6 +9,7 @@ import '../../providers/history_provider.dart';
 import '../home/home_provider.dart';
 import '../theme/app_theme.dart';
 import '../theme/clay_decoration.dart';
+import '../theme/custom_app_bar.dart';
 
 /// Scan screen where users capture/pick a photo and
 /// classify waste using Gemini AI.
@@ -54,15 +55,7 @@ class HomeScreen extends ConsumerWidget {
 
     return Scaffold(
       extendBodyBehindAppBar: true,
-      appBar: AppBar(
-        title: Text(
-          'Pindai Sampah',
-          style: GoogleFonts.outfit(
-            fontWeight: FontWeight.bold,
-            color: theme.colorScheme.onSurface,
-          ),
-        ),
-      ),
+      appBar: const CustomAppBar(title: 'Pindai Sampah'),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(
@@ -156,7 +149,7 @@ class HomeScreen extends ConsumerWidget {
     }
 
     return Container(
-      height: 280,
+      constraints: const BoxConstraints(minHeight: 280),
       decoration: ClayDecoration.card(
         color: theme.colorScheme.surfaceContainerLow,
         brightness: brightness,
@@ -351,27 +344,18 @@ class HomeScreen extends ConsumerWidget {
             borderRadius: BorderRadius.circular(20),
           ),
         ),
-        child: isLoading
-            ? const SizedBox(
-                width: 24,
-                height: 24,
-                child: CircularProgressIndicator(
-                  color: Colors.white,
-                  strokeWidth: 2.5,
-                ),
-              )
-            : Text(
-                'Mulai Klasifikasi',
-                style: GoogleFonts.outfit(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: hasImage
-                      ? const Color(0xFF0A1F00)
-                      : theme
-                          .colorScheme.onSurfaceVariant
-                          .withAlpha(150),
-                ),
-              ),
+        child: Text(
+          isLoading ? 'Menganalisis...' : 'Mulai Klasifikasi',
+          style: GoogleFonts.outfit(
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+            color: (hasImage && !isLoading)
+                ? const Color(0xFF0A1F00)
+                : theme
+                    .colorScheme.onSurfaceVariant
+                    .withAlpha(150),
+          ),
+        ),
       ),
     );
   }

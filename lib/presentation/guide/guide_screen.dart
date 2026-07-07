@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../theme/app_theme.dart';
 import '../theme/clay_decoration.dart';
+import '../theme/custom_app_bar.dart';
 
 /// Bali waste-sorting guide with trivia corner,
 /// bin category cards, and eco-tips.
@@ -57,15 +58,7 @@ class _GuideScreenState extends State<GuideScreen> {
     final binColors = theme.extension<BinColors>();
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          'Panduan Bali Hijau',
-          style: GoogleFonts.outfit(
-            fontWeight: FontWeight.bold,
-            color: theme.colorScheme.onSurface,
-          ),
-        ),
-      ),
+      appBar: const CustomAppBar(title: 'Panduan Bali Hijau'),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(
