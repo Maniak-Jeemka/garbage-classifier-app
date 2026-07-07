@@ -15,7 +15,7 @@ class ClassificationResult {
     // Defensive casting for confidence as it might come back as String or num
     final rawConfidence = json['confidence'];
     double confidenceValue = 0.0;
-    
+
     if (rawConfidence is num) {
       confidenceValue = rawConfidence.toDouble();
     } else if (rawConfidence is String) {

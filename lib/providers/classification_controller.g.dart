@@ -45,7 +45,7 @@ abstract class _$ClassificationController
   FutureOr<ClassificationResult?> build();
   @$mustCallSuper
   @override
-  WhenComplete runBuild() {
+  void runBuild() {
     final ref =
         this.ref
             as $Ref<AsyncValue<ClassificationResult?>, ClassificationResult?>;
@@ -60,6 +60,6 @@ abstract class _$ClassificationController
               Object?,
               Object?
             >;
-    return element.handleCreate(ref, build);
+    element.handleCreate(ref, build);
   }
 }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../theme/app_theme.dart';
+import '../widgets/clay_container.dart';
 
 class GuideScreen extends StatefulWidget {
   const GuideScreen({super.key});
@@ -19,7 +20,7 @@ class _GuideScreenState extends State<GuideScreen> {
     'Menumpuknya sampah organik di TPA Suwung tanpa oksigen menghasilkan gas metana, gas rumah kaca yang 25 kali lebih kuat menangkap panas dibanding CO2.',
     'Membersihkan atau membilas kemasan plastik/kaca dari sisa makanan meningkatkan peluang daur ulangnya hingga 90% di pusat pemilahan Bali.',
     'Sungai Watch, sebuah LSM lingkungan di Bali, telah memasang lebih dari 150 jaring sampah di sungai-sungai Bali dan mengumpulkan ratusan ton plastik.',
-    'Membuat lubang biopori di halaman rumah adalah cara termudah menyerap air hujan sekaligus mengompos sisa canang sari dan dedaunan di Bali.'
+    'Membuat lubang biopori di halaman rumah adalah cara termudah menyerap air hujan sekaligus mengompos sisa canang sari dan dedaunan di Bali.',
   ];
 
   void _nextTrivia() {
@@ -56,7 +57,10 @@ class _GuideScreenState extends State<GuideScreen> {
         ),
         child: SafeArea(
           child: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
+            padding: const EdgeInsets.symmetric(
+              horizontal: 24.0,
+              vertical: 16.0,
+            ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
@@ -79,12 +83,14 @@ class _GuideScreenState extends State<GuideScreen> {
                   ),
                 ),
                 const SizedBox(height: 16),
-                
+
                 // Bin Cards
                 _buildBinCard(
                   title: '1. ORGANIK (Hijau)',
-                  description: 'Sampah alami yang mudah membusuk dan terurai kembali ke tanah.',
-                  details: '• Sisa makanan & potongan sayur\n'
+                  description:
+                      'Sampah alami yang mudah membusuk dan terurai kembali ke tanah.',
+                  details:
+                      '• Sisa makanan & potongan sayur\n'
                       '• Daun kering & ranting kebun\n'
                       '• Bekas sesaji Canang Sari (bunga & janur)\n'
                       '• Kulit buah\n\n'
@@ -94,8 +100,10 @@ class _GuideScreenState extends State<GuideScreen> {
                 const SizedBox(height: 14),
                 _buildBinCard(
                   title: '2. NON-ORGANIK (Kuning)',
-                  description: 'Bahan yang tidak membusuk tapi bernilai untuk didaur ulang kembali.',
-                  details: '• Botol plastik minuman (PET/HDPE)\n'
+                  description:
+                      'Bahan yang tidak membusuk tapi bernilai untuk didaur ulang kembali.',
+                  details:
+                      '• Botol plastik minuman (PET/HDPE)\n'
                       '• Kaleng aluminium & kemasan logam\n'
                       '• Kertas, kardus, koran & buku\n'
                       '• Botol & wadah kaca\n\n'
@@ -105,8 +113,10 @@ class _GuideScreenState extends State<GuideScreen> {
                 const SizedBox(height: 14),
                 _buildBinCard(
                   title: '3. RESIDU (Merah/Abu)',
-                  description: 'Sampah yang tidak bisa didaur ulang maupun dikomposkan. Harus ke TPA.',
-                  details: '• Popok bayi & pembalut bekas\n'
+                  description:
+                      'Sampah yang tidak bisa didaur ulang maupun dikomposkan. Harus ke TPA.',
+                  details:
+                      '• Popok bayi & pembalut bekas\n'
                       '• Pembalut/tissue basah kotor\n'
                       '• Plastik sachet multi-layer (kemasan kopi/snack)\n'
                       '• Puntung rokok & pecahan keramik\n\n'
@@ -114,7 +124,7 @@ class _GuideScreenState extends State<GuideScreen> {
                   color: binColors?.residu ?? Colors.red,
                 ),
                 const SizedBox(height: 28),
-                
+
                 // Eco tips section
                 Text(
                   'Langkah Menuju Bali Zero-Waste',
@@ -135,22 +145,20 @@ class _GuideScreenState extends State<GuideScreen> {
   }
 
   Widget _buildTriviaCorner(ThemeData theme) {
-    return Container(
+    return ClayContainer(
       padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: theme.colorScheme.primaryContainer.withAlpha(80),
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(
-          color: theme.colorScheme.primary.withAlpha(50),
-          width: 1,
-        ),
-      ),
+      color: theme.colorScheme.primaryContainer.withAlpha(80),
+      borderRadius: 24,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              Icon(Icons.lightbulb_outline_rounded, color: theme.colorScheme.primary, size: 24),
+              Icon(
+                Icons.lightbulb_outline_rounded,
+                color: theme.colorScheme.primary,
+                size: 24,
+              ),
               const SizedBox(width: 8),
               Text(
                 'Tahukah Anda? (Trivia Eco Bali)',
@@ -180,7 +188,11 @@ class _GuideScreenState extends State<GuideScreen> {
             alignment: Alignment.centerRight,
             child: TextButton.icon(
               onPressed: _nextTrivia,
-              icon: Icon(Icons.refresh_rounded, size: 18, color: theme.colorScheme.primary),
+              icon: Icon(
+                Icons.refresh_rounded,
+                size: 18,
+                color: theme.colorScheme.primary,
+              ),
               label: Text(
                 'Fakta Lain',
                 style: GoogleFonts.outfit(
@@ -190,9 +202,14 @@ class _GuideScreenState extends State<GuideScreen> {
                 ),
               ),
               style: TextButton.styleFrom(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 6,
+                ),
                 backgroundColor: theme.colorScheme.primary.withAlpha(20),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
               ),
             ),
           ),
@@ -208,14 +225,12 @@ class _GuideScreenState extends State<GuideScreen> {
     required Color color,
   }) {
     return Theme(
-      data: ThemeData(useMaterial3: true).copyWith(dividerColor: Colors.transparent),
-      child: Card(
-        elevation: 0,
+      data: ThemeData(
+        useMaterial3: true,
+      ).copyWith(dividerColor: Colors.transparent),
+      child: ClayContainer(
+        borderRadius: 20,
         color: color.withAlpha(15),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
-          side: BorderSide(color: color.withAlpha(60), width: 1.5),
-        ),
         child: ExpansionTile(
           collapsedIconColor: color,
           iconColor: color,
@@ -265,17 +280,20 @@ class _GuideScreenState extends State<GuideScreen> {
     final tips = [
       {
         'title': 'Bawa Tas Belanja',
-        'desc': 'Hindari tas plastik kresek dengan selalu siap sedia "Tas Belanja" kain lipat di bagasi motor Anda.',
+        'desc':
+            'Hindari tas plastik kresek dengan selalu siap sedia "Tas Belanja" kain lipat di bagasi motor Anda.',
         'icon': Icons.shopping_bag_outlined,
       },
       {
         'title': 'Pilah Dari Sumber',
-        'desc': 'Sediakan 3 wadah terpisah langsung di dapur Anda. Pemilahan sejak dini mempermudah petugas kebersihan.',
+        'desc':
+            'Sediakan 3 wadah terpisah langsung di dapur Anda. Pemilahan sejak dini mempermudah petugas kebersihan.',
         'icon': Icons.layers_outlined,
       },
       {
         'title': 'Bilas Wadah Plastik',
-        'desc': 'Kemasan yogurt/susu kotor berbau busuk merusak ribuan kertas/kardus lain. Bilas cepat sebelum dibuang!',
+        'desc':
+            'Kemasan yogurt/susu kotor berbau busuk merusak ribuan kertas/kardus lain. Bilas cepat sebelum dibuang!',
         'icon': Icons.cleaning_services_outlined,
       },
     ];
@@ -287,15 +305,12 @@ class _GuideScreenState extends State<GuideScreen> {
         itemCount: tips.length,
         itemBuilder: (context, index) {
           final tip = tips[index];
-          return Container(
+          return ClayContainer(
             width: 250,
             margin: const EdgeInsets.only(right: 14),
             padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: theme.colorScheme.surfaceContainerLow,
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: theme.colorScheme.outlineVariant.withAlpha(50)),
-            ),
+            color: theme.colorScheme.surfaceContainerLow,
+            borderRadius: 20,
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -305,7 +320,11 @@ class _GuideScreenState extends State<GuideScreen> {
                     color: theme.colorScheme.secondary.withAlpha(20),
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  child: Icon(tip['icon'] as IconData, color: theme.colorScheme.secondary, size: 22),
+                  child: Icon(
+                    tip['icon'] as IconData,
+                    color: theme.colorScheme.secondary,
+                    size: 22,
+                  ),
                 ),
                 const SizedBox(width: 12),
                 Expanded(

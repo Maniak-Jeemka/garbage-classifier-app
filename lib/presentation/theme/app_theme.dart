@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 @immutable
 class BinColors extends ThemeExtension<BinColors> {
@@ -38,40 +39,47 @@ class BinColors extends ThemeExtension<BinColors> {
 
 @immutable
 class AppTheme {
-  static const primaryColor = Color(0xFF6366F1); // Indigo
-  static const secondaryColor = Color(0xFFEC4899); // Pink
-  
+  static const primaryColor = Color(0xFFB5EAD7); // Soft Pastel Mint Green
+  static const secondaryColor = Color(0xFFC7E9B0); // Pastel Lime Green
+  static const backgroundColor = Color(
+    0xFFF9F9F6,
+  ); // Creamy Off-White for claymorphism
+  static const darkBackgroundColor = Color(
+    0xFF2D423F,
+  ); // Enchanted Forest Dark Green
+
   static const lightBinColors = BinColors(
-    organik: Color(0xFF10B981), // Emerald
-    nonOrganik: Color(0xFFF59E0B), // Amber
-    residu: Color(0xFFEF4444), // Rose
+    organik: Color(0xFF81C784), // Soft Green
+    nonOrganik: Color(0xFFFFD54F), // Soft Amber
+    residu: Color(0xFFE57373), // Soft Red
   );
 
   static const darkBinColors = BinColors(
-    organik: Color(0xFF34D399), // Mint-Emerald
-    nonOrganik: Color(0xFFFBBF24), // Light Amber
-    residu: Color(0xFFF87171), // Light Rose
+    organik: Color(0xFF4CAF50), // Vibrant Mint/Green
+    nonOrganik: Color(0xFFFFC107), // Vibrant Amber
+    residu: Color(0xFFEF5350), // Vibrant Red
   );
-  
+
   static final lightTheme = ThemeData(
     useMaterial3: true,
     colorScheme: ColorScheme.fromSeed(
       seedColor: primaryColor,
       brightness: Brightness.light,
+      surface: backgroundColor,
     ),
-    extensions: const <ThemeExtension<dynamic>>[
-      lightBinColors,
-    ],
-    appBarTheme: const AppBarTheme(
+    scaffoldBackgroundColor: backgroundColor,
+    extensions: const <ThemeExtension<dynamic>>[lightBinColors],
+    appBarTheme: AppBarTheme(
       centerTitle: true,
       elevation: 0,
       backgroundColor: Colors.transparent,
-      titleTextStyle: TextStyle(
-        color: Colors.black,
+      titleTextStyle: GoogleFonts.outfit(
+        color: Colors.black87,
         fontSize: 20,
         fontWeight: FontWeight.bold,
       ),
     ),
+    textTheme: GoogleFonts.outfitTextTheme(),
   );
 
   static final darkTheme = ThemeData(
@@ -79,19 +87,20 @@ class AppTheme {
     colorScheme: ColorScheme.fromSeed(
       seedColor: primaryColor,
       brightness: Brightness.dark,
+      surface: darkBackgroundColor,
     ),
-    extensions: const <ThemeExtension<dynamic>>[
-      darkBinColors,
-    ],
-    appBarTheme: const AppBarTheme(
+    scaffoldBackgroundColor: darkBackgroundColor,
+    extensions: const <ThemeExtension<dynamic>>[darkBinColors],
+    appBarTheme: AppBarTheme(
       centerTitle: true,
       elevation: 0,
       backgroundColor: Colors.transparent,
-      titleTextStyle: TextStyle(
+      titleTextStyle: GoogleFonts.outfit(
         color: Colors.white,
         fontSize: 20,
         fontWeight: FontWeight.bold,
       ),
     ),
+    textTheme: GoogleFonts.outfitTextTheme(ThemeData.dark().textTheme),
   );
 }
