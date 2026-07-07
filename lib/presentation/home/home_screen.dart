@@ -167,7 +167,6 @@ class HomeScreen extends ConsumerWidget {
     }
 
     return ClayContainer(
-      height: 280,
       borderRadius: 28,
       padding: const EdgeInsets.all(24),
       child: Column(
