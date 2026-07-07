@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../providers/history_provider.dart';
 import '../theme/app_theme.dart';
+import '../theme/clay_decoration.dart';
 
 /// Displays user profile information, scan statistics,
 /// and app preferences.
@@ -24,46 +25,36 @@ class ProfileScreen extends ConsumerWidget {
           ),
         ),
       ),
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              theme.colorScheme.surface,
-              theme.colorScheme.surfaceContainerHighest
-                  .withAlpha(100),
-            ],
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(
+            horizontal: 24.0,
+            vertical: 16.0,
           ),
-        ),
-        child: SafeArea(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(
-              horizontal: 24.0,
-              vertical: 16.0,
-            ),
-            child: Column(
-              children: [
-                const _ProfileHeader(),
-                const SizedBox(height: 24),
-                historyAsync.when(
-                  data: (records) =>
-                      _StatsGrid(records: records),
-                  loading: () => const SizedBox(
-                    height: 120,
-                    child: Center(
-                      child: CircularProgressIndicator(),
+          child: Column(
+            children: [
+              const _ProfileHeader(),
+              const SizedBox(height: 24),
+              historyAsync.when(
+                data: (records) =>
+                    _StatsGrid(records: records),
+                loading: () => SizedBox(
+                  height: 120,
+                  child: Center(
+                    child: CircularProgressIndicator(
+                      color: AppTheme.neonGreen,
                     ),
                   ),
-                  error: (_, _) => const SizedBox.shrink(),
                 ),
-                const SizedBox(height: 28),
-                const _PreferencesSection(),
-                const SizedBox(height: 28),
-                const _AppInfoSection(),
-                const SizedBox(height: 32),
-              ],
-            ),
+                error: (_, _) =>
+                    const SizedBox.shrink(),
+              ),
+              const SizedBox(height: 28),
+              const _PreferencesSection(),
+              const SizedBox(height: 28),
+              const _AppInfoSection(),
+              const SizedBox(height: 32),
+            ],
           ),
         ),
       ),
@@ -77,44 +68,32 @@ class _ProfileHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final brightness = theme.brightness;
 
     return Container(
       padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            theme.colorScheme.primary.withAlpha(200),
-            theme.colorScheme.secondary.withAlpha(200),
-          ],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(24),
-        boxShadow: [
-          BoxShadow(
-            color:
-                theme.colorScheme.primary.withAlpha(40),
-            blurRadius: 12,
-            offset: const Offset(0, 6),
-          ),
-        ],
+      decoration: ClayDecoration.elevated(
+        color: AppTheme.neonGreen,
+        brightness: brightness,
       ),
       child: Row(
         children: [
           Container(
             width: 64,
             height: 64,
-            decoration: BoxDecoration(
-              color: Colors.white.withAlpha(50),
-              shape: BoxShape.circle,
+            decoration: ClayDecoration.circle(
+              color: const Color(0xFF0A1F00)
+                  .withAlpha(30),
+              brightness: brightness,
               border: Border.all(
-                color: Colors.white.withAlpha(100),
+                color: const Color(0xFF0A1F00)
+                    .withAlpha(50),
                 width: 2,
               ),
             ),
             child: const Icon(
               Icons.person_rounded,
-              color: Colors.white,
+              color: Color(0xFF0A1F00),
               size: 36,
             ),
           ),
@@ -129,7 +108,7 @@ class _ProfileHeader extends StatelessWidget {
                   style: GoogleFonts.outfit(
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
-                    color: Colors.white,
+                    color: const Color(0xFF0A1F00),
                   ),
                 ),
                 const SizedBox(height: 4),
@@ -137,7 +116,8 @@ class _ProfileHeader extends StatelessWidget {
                   'Bersama menjaga Pulau Dewata 🌿',
                   style: GoogleFonts.outfit(
                     fontSize: 13,
-                    color: Colors.white.withAlpha(200),
+                    color: const Color(0xFF0A1F00)
+                        .withAlpha(180),
                   ),
                 ),
               ],
@@ -165,8 +145,9 @@ class _StatsGrid extends StatelessWidget {
     int residu = 0;
 
     for (final record in records) {
-      final cat =
-          record.result.category.toString().toLowerCase();
+      final cat = record.result.category
+          .toString()
+          .toLowerCase();
       if (cat == 'organik') {
         organik++;
       } else if (cat == 'non-organik') {
@@ -195,7 +176,7 @@ class _StatsGrid extends StatelessWidget {
                 label: 'Total Scan',
                 value: total.toString(),
                 icon: Icons.qr_code_scanner_rounded,
-                color: theme.colorScheme.primary,
+                color: AppTheme.neonGreen,
               ),
             ),
             const SizedBox(width: 10),
@@ -204,8 +185,8 @@ class _StatsGrid extends StatelessWidget {
                 label: 'Organik',
                 value: organik.toString(),
                 icon: Icons.eco_rounded,
-                color:
-                    binColors?.organik ?? Colors.green,
+                color: binColors?.organik ??
+                    Colors.green,
               ),
             ),
           ],
@@ -218,8 +199,8 @@ class _StatsGrid extends StatelessWidget {
                 label: 'Non-Organik',
                 value: nonOrganik.toString(),
                 icon: Icons.recycling_rounded,
-                color:
-                    binColors?.nonOrganik ?? Colors.amber,
+                color: binColors?.nonOrganik ??
+                    Colors.amber,
               ),
             ),
             const SizedBox(width: 10),
@@ -228,7 +209,8 @@ class _StatsGrid extends StatelessWidget {
                 label: 'Residu',
                 value: residu.toString(),
                 icon: Icons.delete_rounded,
-                color: binColors?.residu ?? Colors.red,
+                color:
+                    binColors?.residu ?? Colors.red,
               ),
             ),
           ],
@@ -254,25 +236,28 @@ class _StatCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final brightness = theme.brightness;
 
     return Container(
       padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
+      decoration: ClayDecoration.card(
         color: theme.colorScheme.surfaceContainerLow,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: color.withAlpha(40),
-        ),
+        brightness: brightness,
+        radius: 22,
       ),
       child: Row(
         children: [
           Container(
             padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
+            decoration: ClayDecoration.pill(
               color: color.withAlpha(25),
-              borderRadius: BorderRadius.circular(12),
+              brightness: brightness,
+            ).copyWith(
+              borderRadius:
+                  BorderRadius.circular(14),
             ),
-            child: Icon(icon, color: color, size: 22),
+            child:
+                Icon(icon, color: color, size: 22),
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -311,6 +296,7 @@ class _PreferencesSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final brightness = theme.brightness;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -325,41 +311,22 @@ class _PreferencesSection extends StatelessWidget {
         ),
         const SizedBox(height: 12),
         Container(
-          decoration: BoxDecoration(
-            color: theme.colorScheme.surfaceContainerLow,
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(
-              color: theme.colorScheme.outlineVariant
-                  .withAlpha(40),
-            ),
+          decoration: ClayDecoration.card(
+            color:
+                theme.colorScheme.surfaceContainerLow,
+            brightness: brightness,
+            radius: 22,
           ),
           child: Column(
             children: [
-              _PreferenceItem(
-                icon: Icons.dark_mode_rounded,
-                title: 'Mode Gelap',
-                subtitle: 'Mengikuti pengaturan sistem',
-                trailing: Icon(
-                  Icons.settings_system_daydream_rounded,
-                  color:
-                      theme.colorScheme.onSurfaceVariant,
-                  size: 20,
-                ),
-              ),
-              Divider(
-                height: 1,
-                indent: 56,
-                color: theme.colorScheme.outlineVariant
-                    .withAlpha(50),
-              ),
               _PreferenceItem(
                 icon: Icons.language_rounded,
                 title: 'Bahasa',
                 subtitle: 'Indonesia',
                 trailing: Icon(
                   Icons.chevron_right_rounded,
-                  color:
-                      theme.colorScheme.onSurfaceVariant,
+                  color: theme
+                      .colorScheme.onSurfaceVariant,
                   size: 20,
                 ),
               ),
@@ -397,7 +364,7 @@ class _PreferenceItem extends StatelessWidget {
         children: [
           Icon(
             icon,
-            color: theme.colorScheme.primary,
+            color: AppTheme.neonGreen,
             size: 22,
           ),
           const SizedBox(width: 14),
@@ -411,7 +378,8 @@ class _PreferenceItem extends StatelessWidget {
                   style: GoogleFonts.outfit(
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
-                    color: theme.colorScheme.onSurface,
+                    color:
+                        theme.colorScheme.onSurface,
                   ),
                 ),
                 Text(
@@ -438,6 +406,7 @@ class _AppInfoSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final brightness = theme.brightness;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -453,13 +422,11 @@ class _AppInfoSection extends StatelessWidget {
         const SizedBox(height: 12),
         Container(
           padding: const EdgeInsets.all(20),
-          decoration: BoxDecoration(
-            color: theme.colorScheme.surfaceContainerLow,
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(
-              color: theme.colorScheme.outlineVariant
-                  .withAlpha(40),
-            ),
+          decoration: ClayDecoration.card(
+            color:
+                theme.colorScheme.surfaceContainerLow,
+            brightness: brightness,
+            radius: 22,
           ),
           child: Column(
             children: [
@@ -467,19 +434,17 @@ class _AppInfoSection extends StatelessWidget {
                 children: [
                   Container(
                     padding: const EdgeInsets.all(10),
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [
-                          theme.colorScheme.primary,
-                          theme.colorScheme.secondary,
-                        ],
-                      ),
+                    decoration:
+                        ClayDecoration.button(
+                      color: AppTheme.neonGreen,
+                      brightness: brightness,
+                    ).copyWith(
                       borderRadius:
-                          BorderRadius.circular(14),
+                          BorderRadius.circular(16),
                     ),
                     child: const Icon(
                       Icons.eco_rounded,
-                      color: Colors.white,
+                      color: Color(0xFF0A1F00),
                       size: 24,
                     ),
                   ),
@@ -490,10 +455,11 @@ class _AppInfoSection extends StatelessWidget {
                           CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Bali Waste Classifier',
+                          'Re Resik',
                           style: GoogleFonts.outfit(
                             fontSize: 16,
-                            fontWeight: FontWeight.bold,
+                            fontWeight:
+                                FontWeight.bold,
                           ),
                         ),
                         const SizedBox(height: 2),
@@ -512,15 +478,16 @@ class _AppInfoSection extends StatelessWidget {
               ),
               const SizedBox(height: 14),
               Text(
-                'Aplikasi klasifikasi sampah berbasis AI '
-                'untuk membantu warga Bali memilah sampah '
-                'ke dalam tiga wadah: Organik, Non-Organik, '
-                'dan Residu sesuai Pergub Bali No. 47/2019.',
+                'Aplikasi klasifikasi sampah berbasis '
+                'AI untuk membantu warga Bali memilah '
+                'sampah ke dalam tiga wadah: Organik, '
+                'Non-Organik, dan Residu sesuai Pergub '
+                'Bali No. 47/2019.',
                 style: GoogleFonts.outfit(
                   fontSize: 12.5,
                   height: 1.5,
-                  color:
-                      theme.colorScheme.onSurfaceVariant,
+                  color: theme
+                      .colorScheme.onSurfaceVariant,
                 ),
               ),
             ],

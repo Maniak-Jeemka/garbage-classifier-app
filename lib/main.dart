@@ -25,11 +25,10 @@ class GarbageClassifierApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Bali Waste Classifier',
+      title: 'Re Resik',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
-      darkTheme: AppTheme.darkTheme,
-      themeMode: ThemeMode.system,
+      themeMode: ThemeMode.light,
       home: const DashboardScreen(),
     );
   }

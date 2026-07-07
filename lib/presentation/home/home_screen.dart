@@ -8,7 +8,10 @@ import '../../providers/classification_controller.dart';
 import '../../providers/history_provider.dart';
 import '../home/home_provider.dart';
 import '../theme/app_theme.dart';
+import '../theme/clay_decoration.dart';
 
+/// Scan screen where users capture/pick a photo and
+/// classify waste using Gemini AI.
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
 
@@ -16,22 +19,30 @@ class HomeScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final state = ref.watch(homeProvider);
     final notifier = ref.read(homeProvider.notifier);
-    final classificationState = ref.watch(classificationControllerProvider);
+    final classificationState =
+        ref.watch(classificationControllerProvider);
     final theme = Theme.of(context);
 
     // Listen to classification results and save to history
-    ref.listen(classificationControllerProvider, (previous, next) {
+    ref.listen(classificationControllerProvider,
+        (previous, next) {
       next.whenOrNull(
         data: (result) {
-          if (result != null && state.image != null && previous?.isLoading == true) {
+          if (result != null &&
+              state.image != null &&
+              previous?.isLoading == true) {
             final record = ScanRecord(
-              id: DateTime.now().millisecondsSinceEpoch.toString(),
+              id: DateTime.now()
+                  .millisecondsSinceEpoch
+                  .toString(),
               timestamp: DateTime.now(),
               imagePath: state.image!.path,
               result: result,
             );
-            ref.read(historyProvider.notifier).addRecord(record);
-            
+            ref
+                .read(historyProvider.notifier)
+                .addRecord(record);
+
             _showResultPopup(context, result);
           }
         },
@@ -52,69 +63,69 @@ class HomeScreen extends ConsumerWidget {
           ),
         ),
       ),
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              theme.colorScheme.surface,
-              theme.colorScheme.surfaceContainerHighest.withAlpha(100),
-            ],
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(
+            horizontal: 24.0,
+            vertical: 16.0,
           ),
-        ),
-        child: SafeArea(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                _buildPhotoArea(context, state, notifier),
-                const SizedBox(height: 24),
-                _buildContextField(context, notifier),
-                const SizedBox(height: 24),
-                _buildClassifyButton(context, state, ref),
-                
-                // Display loading state only
-                classificationState.when(
-                  data: (_) => const SizedBox.shrink(),
-                  loading: () => const Padding(
-                    padding: EdgeInsets.symmetric(vertical: 32.0),
-                    child: Center(
-                      child: Column(
-                        children: [
-                          CircularProgressIndicator(),
-                          SizedBox(height: 16),
-                          Text('Menganalisis jenis sampah...'),
-                        ],
-                      ),
+          child: Column(
+            crossAxisAlignment:
+                CrossAxisAlignment.stretch,
+            children: [
+              _buildPhotoArea(context, state, notifier),
+              const SizedBox(height: 24),
+              _buildContextField(context, notifier),
+              const SizedBox(height: 24),
+              _buildClassifyButton(context, state, ref),
+
+              // Display loading state only
+              classificationState.when(
+                data: (_) => const SizedBox.shrink(),
+                loading: () => Padding(
+                  padding: const EdgeInsets.symmetric(
+                    vertical: 32.0,
+                  ),
+                  child: Center(
+                    child: Column(
+                      children: [
+                        CircularProgressIndicator(
+                          color: AppTheme.neonGreen,
+                        ),
+                        const SizedBox(height: 16),
+                        Text(
+                          'Menganalisis jenis sampah...',
+                          style: GoogleFonts.outfit(),
+                        ),
+                      ],
                     ),
                   ),
-                  error: (_, _) => const SizedBox.shrink(),
                 ),
-              ],
-            ),
+                error: (_, _) =>
+                    const SizedBox.shrink(),
+              ),
+            ],
           ),
         ),
       ),
     );
   }
 
-  Widget _buildPhotoArea(BuildContext context, HomeState state, Home notifier) {
+  Widget _buildPhotoArea(
+    BuildContext context,
+    HomeState state,
+    Home notifier,
+  ) {
     final theme = Theme.of(context);
-    
+    final brightness = theme.brightness;
+
     if (state.image != null) {
       return Container(
         height: 280,
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(28),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withAlpha(40),
-              blurRadius: 20,
-              offset: const Offset(0, 10),
-            ),
-          ],
+        decoration: ClayDecoration.elevated(
+          color: theme.colorScheme.surfaceContainerLow,
+          brightness: brightness,
+        ).copyWith(
           image: DecorationImage(
             image: FileImage(File(state.image!.path)),
             fit: BoxFit.cover,
@@ -125,16 +136,17 @@ class HomeScreen extends ConsumerWidget {
             Positioned(
               top: 16,
               right: 16,
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(16),
-                child: Container(
+              child: Container(
+                decoration: ClayDecoration.pill(
                   color: Colors.black54,
-                  child: IconButton(
-                    icon: const Icon(Icons.close, color: Colors.white),
-                    onPressed: () {
-                      notifier.clearImage();
-                    },
+                  brightness: brightness,
+                ),
+                child: IconButton(
+                  icon: const Icon(
+                    Icons.close,
+                    color: Colors.white,
                   ),
+                  onPressed: notifier.clearImage,
                 ),
               ),
             ),
@@ -145,14 +157,10 @@ class HomeScreen extends ConsumerWidget {
 
     return Container(
       height: 280,
-      decoration: BoxDecoration(
-        color: theme.colorScheme.surfaceContainerHigh.withAlpha(128),
-        borderRadius: BorderRadius.circular(28),
-        border: Border.all(
-          color: theme.colorScheme.primary.withAlpha(50),
-          width: 2,
-          style: BorderStyle.solid,
-        ),
+      decoration: ClayDecoration.card(
+        color: theme.colorScheme.surfaceContainerLow,
+        brightness: brightness,
+        radius: 28,
       ),
       padding: const EdgeInsets.all(24),
       child: Column(
@@ -161,7 +169,7 @@ class HomeScreen extends ConsumerWidget {
           Icon(
             Icons.add_photo_alternate_rounded,
             size: 64,
-            color: theme.colorScheme.primary.withAlpha(180),
+            color: AppTheme.neonGreen.withAlpha(180),
           ),
           const SizedBox(height: 12),
           Text(
@@ -174,7 +182,8 @@ class HomeScreen extends ConsumerWidget {
           ),
           const SizedBox(height: 8),
           Text(
-            'AI akan mengklasifikasikan sampah ke wadah yang tepat',
+            'AI akan mengklasifikasikan sampah '
+            'ke wadah yang tepat',
             textAlign: TextAlign.center,
             style: GoogleFonts.outfit(
               fontSize: 13,
@@ -183,7 +192,8 @@ class HomeScreen extends ConsumerWidget {
           ),
           const SizedBox(height: 24),
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            mainAxisAlignment:
+                MainAxisAlignment.spaceEvenly,
             children: [
               _buildSourceCardButton(
                 context,
@@ -211,29 +221,35 @@ class HomeScreen extends ConsumerWidget {
     required VoidCallback onTap,
   }) {
     final theme = Theme.of(context);
+    final brightness = theme.brightness;
+
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(16),
+      borderRadius: BorderRadius.circular(20),
       child: Container(
         width: 110,
-        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
-        decoration: BoxDecoration(
-          color: theme.colorScheme.primary.withAlpha(20),
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(
-            color: theme.colorScheme.primary.withAlpha(40),
-          ),
+        padding: const EdgeInsets.symmetric(
+          vertical: 12,
+          horizontal: 16,
+        ),
+        decoration: ClayDecoration.button(
+          color: AppTheme.neonGreen.withAlpha(25),
+          brightness: brightness,
         ),
         child: Column(
           children: [
-            Icon(icon, color: theme.colorScheme.primary, size: 24),
+            Icon(
+              icon,
+              color: AppTheme.neonGreen,
+              size: 24,
+            ),
             const SizedBox(height: 6),
             Text(
               label,
               style: GoogleFonts.outfit(
                 fontSize: 13,
                 fontWeight: FontWeight.bold,
-                color: theme.colorScheme.primary,
+                color: AppTheme.neonGreen,
               ),
             ),
           ],
@@ -242,7 +258,10 @@ class HomeScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildContextField(BuildContext context, Home notifier) {
+  Widget _buildContextField(
+    BuildContext context,
+    Home notifier,
+  ) {
     final theme = Theme.of(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -256,123 +275,159 @@ class HomeScreen extends ConsumerWidget {
           ),
         ),
         const SizedBox(height: 8),
-        TextField(
-          onChanged: notifier.setContext,
-          maxLines: 2,
-          style: GoogleFonts.outfit(fontSize: 14),
-          decoration: InputDecoration(
-            hintText: 'Misalnya: "Saya menemukan plastik kemasan ini di pantai"',
-            filled: true,
-            fillColor: theme.colorScheme.surfaceContainerLow,
-            hintStyle: GoogleFonts.outfit(color: theme.colorScheme.onSurfaceVariant.withAlpha(150)),
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(16),
-              borderSide: BorderSide.none,
+        Container(
+          decoration: ClayDecoration.input(
+            color:
+                theme.colorScheme.surfaceContainerLow,
+            brightness: theme.brightness,
+          ),
+          child: TextField(
+            onChanged: notifier.setContext,
+            maxLines: 2,
+            style: GoogleFonts.outfit(fontSize: 14),
+            decoration: InputDecoration(
+              hintText:
+                  'Misalnya: "Saya menemukan plastik '
+                  'kemasan ini di pantai"',
+              filled: false,
+              hintStyle: GoogleFonts.outfit(
+                color: theme
+                    .colorScheme.onSurfaceVariant
+                    .withAlpha(150),
+              ),
+              border: InputBorder.none,
+              contentPadding:
+                  const EdgeInsets.symmetric(
+                horizontal: 16,
+                vertical: 12,
+              ),
             ),
-            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           ),
         ),
       ],
     );
   }
 
-  Widget _buildClassifyButton(BuildContext context, HomeState state, WidgetRef ref) {
+  Widget _buildClassifyButton(
+    BuildContext context,
+    HomeState state,
+    WidgetRef ref,
+  ) {
     final theme = Theme.of(context);
-    final classificationState = ref.watch(classificationControllerProvider);
-    final isLoading = classificationState.isLoading || state.isLoading;
+    final classificationState =
+        ref.watch(classificationControllerProvider);
+    final isLoading =
+        classificationState.isLoading || state.isLoading;
     final hasImage = state.image != null;
 
     return AnimatedContainer(
       duration: const Duration(milliseconds: 300),
       height: 56,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(18),
-        gradient: hasImage && !isLoading
-            ? LinearGradient(
-                colors: [
-                  theme.colorScheme.primary,
-                  theme.colorScheme.secondary,
-                ],
-              )
-            : null,
-        color: hasImage && !isLoading ? null : theme.colorScheme.surfaceContainerHighest,
-        boxShadow: hasImage && !isLoading
-            ? [
-                BoxShadow(
-                  color: theme.colorScheme.primary.withAlpha(80),
-                  blurRadius: 12,
-                  offset: const Offset(0, 6),
-                ),
-              ]
-            : [],
-      ),
+      decoration: hasImage && !isLoading
+          ? ClayDecoration.button(
+              color: AppTheme.neonGreen,
+              brightness: theme.brightness,
+            )
+          : ClayDecoration.card(
+              color: theme
+                  .colorScheme.surfaceContainerHighest,
+              brightness: theme.brightness,
+              radius: 20,
+            ),
       child: ElevatedButton(
         onPressed: (!hasImage || isLoading)
             ? null
-            : () => ref.read(classificationControllerProvider.notifier).classify(File(state.image!.path)),
+            : () => ref
+                .read(
+                  classificationControllerProvider
+                      .notifier,
+                )
+                .classify(File(state.image!.path)),
         style: ElevatedButton.styleFrom(
           backgroundColor: Colors.transparent,
           shadowColor: Colors.transparent,
+          disabledBackgroundColor: Colors.transparent,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(18),
+            borderRadius: BorderRadius.circular(20),
           ),
         ),
         child: isLoading
             ? const SizedBox(
                 width: 24,
                 height: 24,
-                child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2.5),
+                child: CircularProgressIndicator(
+                  color: Colors.white,
+                  strokeWidth: 2.5,
+                ),
               )
             : Text(
                 'Mulai Klasifikasi',
                 style: GoogleFonts.outfit(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
-                  color: hasImage ? Colors.white : theme.colorScheme.onSurfaceVariant.withAlpha(150),
+                  color: hasImage
+                      ? const Color(0xFF0A1F00)
+                      : theme
+                          .colorScheme.onSurfaceVariant
+                          .withAlpha(150),
                 ),
               ),
       ),
     );
   }
 
-  void _showErrorDialog(BuildContext context, Object error) {
+  void _showErrorDialog(
+    BuildContext context,
+    Object error,
+  ) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
         title: Row(
           children: [
-            Icon(Icons.error_outline_rounded, color: Theme.of(context).colorScheme.error),
+            Icon(
+              Icons.error_outline_rounded,
+              color:
+                  Theme.of(context).colorScheme.error,
+            ),
             const SizedBox(width: 12),
             const Text('Error'),
           ],
         ),
-        content: Text(_humanizeError(error), style: GoogleFonts.outfit()),
+        content: Text(
+          _humanizeError(error),
+          style: GoogleFonts.outfit(),
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
             child: const Text('OK'),
           ),
         ],
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
       ),
     );
   }
 
   String _humanizeError(Object error) {
     if (error is SocketException) {
-      return "Koneksi internet bermasalah. Silakan periksa jaringan Anda.";
+      return 'Koneksi internet bermasalah. '
+          'Silakan periksa jaringan Anda.';
     }
-    return "Terjadi kesalahan: ${error.toString()}";
+    return 'Terjadi kesalahan: ${error.toString()}';
   }
 
-  void _showResultPopup(BuildContext context, ClassificationResult result) {
+  void _showResultPopup(
+    BuildContext context,
+    ClassificationResult result,
+  ) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (context) => Padding(
         padding: EdgeInsets.only(
-          bottom: MediaQuery.of(context).padding.bottom + 24,
+          bottom:
+              MediaQuery.of(context).padding.bottom + 24,
           left: 16,
           right: 16,
           top: 32,
@@ -383,14 +438,19 @@ class HomeScreen extends ConsumerWidget {
   }
 }
 
+/// Claymorphism-styled classification result card.
 class InlineResultCard extends StatelessWidget {
   final ClassificationResult result;
 
-  const InlineResultCard({super.key, required this.result});
+  const InlineResultCard({
+    super.key,
+    required this.result,
+  });
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final brightness = theme.brightness;
     final binColors = theme.extension<BinColors>();
 
     Color getCategoryColor() {
@@ -404,7 +464,7 @@ class InlineResultCard extends StatelessWidget {
             return binColors.residu;
         }
       }
-      return theme.colorScheme.primary;
+      return AppTheme.neonGreen;
     }
 
     String getCategoryTitle() {
@@ -422,12 +482,10 @@ class InlineResultCard extends StatelessWidget {
 
     final catColor = getCategoryColor();
 
-    return Card(
-      elevation: 0,
-      color: theme.colorScheme.surfaceContainerLow,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(24),
-        side: BorderSide(color: catColor.withAlpha(80), width: 1.5),
+    return Container(
+      decoration: ClayDecoration.elevated(
+        color: theme.colorScheme.surfaceContainerLow,
+        brightness: brightness,
       ),
       child: Padding(
         padding: const EdgeInsets.all(20.0),
@@ -438,9 +496,9 @@ class InlineResultCard extends StatelessWidget {
               children: [
                 Container(
                   padding: const EdgeInsets.all(10),
-                  decoration: BoxDecoration(
+                  decoration: ClayDecoration.pill(
                     color: catColor.withAlpha(30),
-                    shape: BoxShape.circle,
+                    brightness: brightness,
                   ),
                   child: Icon(
                     Icons.delete_outline_rounded,
@@ -451,7 +509,8 @@ class InlineResultCard extends StatelessWidget {
                 const SizedBox(width: 14),
                 Expanded(
                   child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                    crossAxisAlignment:
+                        CrossAxisAlignment.start,
                     children: [
                       Text(
                         getCategoryTitle(),
@@ -474,10 +533,13 @@ class InlineResultCard extends StatelessWidget {
                   ),
                 ),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                  decoration: BoxDecoration(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 4,
+                  ),
+                  decoration: ClayDecoration.pill(
                     color: catColor.withAlpha(20),
-                    borderRadius: BorderRadius.circular(10),
+                    brightness: brightness,
                   ),
                   child: Text(
                     '${(result.confidence * 100).toStringAsFixed(0)}%',
@@ -490,9 +552,15 @@ class InlineResultCard extends StatelessWidget {
                 ),
               ],
             ),
-            const Padding(
-              padding: EdgeInsets.symmetric(vertical: 16),
-              child: Divider(height: 1),
+            Padding(
+              padding: const EdgeInsets.symmetric(
+                vertical: 16,
+              ),
+              child: Divider(
+                height: 1,
+                color: theme.colorScheme.outlineVariant
+                    .withAlpha(60),
+              ),
             ),
             Text(
               'Instruksi Pembuangan:',
@@ -503,33 +571,41 @@ class InlineResultCard extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 10),
-            ...result.instructions.map((step) => Padding(
-                  padding: const EdgeInsets.only(bottom: 8),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.only(top: 3.0),
-                        child: Icon(
-                          Icons.check_circle_outline_rounded,
-                          color: catColor,
-                          size: 16,
+            ...result.instructions.map(
+              (step) => Padding(
+                padding:
+                    const EdgeInsets.only(bottom: 8),
+                child: Row(
+                  crossAxisAlignment:
+                      CrossAxisAlignment.start,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.only(
+                        top: 3.0,
+                      ),
+                      child: Icon(
+                        Icons
+                            .check_circle_outline_rounded,
+                        color: catColor,
+                        size: 16,
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        step,
+                        style: GoogleFonts.outfit(
+                          fontSize: 13.5,
+                          height: 1.4,
+                          color: theme
+                              .colorScheme.onSurface,
                         ),
                       ),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: Text(
-                          step,
-                          style: GoogleFonts.outfit(
-                            fontSize: 13.5,
-                            height: 1.4,
-                            color: theme.colorScheme.onSurface,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                )),
+                    ),
+                  ],
+                ),
+              ),
+            ),
           ],
         ),
       ),

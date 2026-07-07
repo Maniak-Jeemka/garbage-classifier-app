@@ -5,15 +5,20 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../models/scan_record.dart';
 import '../../providers/history_provider.dart';
 import '../theme/app_theme.dart';
+import '../theme/clay_decoration.dart';
 
+/// Displays the user's classification history with
+/// search, filters, and ecological impact stats.
 class HistoryScreen extends ConsumerStatefulWidget {
   const HistoryScreen({super.key});
 
   @override
-  ConsumerState<HistoryScreen> createState() => _HistoryScreenState();
+  ConsumerState<HistoryScreen> createState() =>
+      _HistoryScreenState();
 }
 
-class _HistoryScreenState extends ConsumerState<HistoryScreen> {
+class _HistoryScreenState
+    extends ConsumerState<HistoryScreen> {
   String _searchQuery = '';
   String _activeFilter = 'Semua';
 
@@ -33,126 +38,163 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.delete_sweep_rounded),
+            icon:
+                const Icon(Icons.delete_sweep_rounded),
             tooltip: 'Hapus Semua',
-            onPressed: () => _confirmClearHistory(context),
+            onPressed: () =>
+                _confirmClearHistory(context),
           ),
         ],
       ),
       body: historyAsync.when(
         data: (records) {
-          final filteredRecords = _filterRecords(records);
-          
-          return Container(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [
-                  theme.colorScheme.surface,
-                  theme.colorScheme.surfaceContainerHighest.withAlpha(100),
-                ],
-              ),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                _buildImpactStatsCard(records),
-                _buildSearchAndFilters(theme),
-                Expanded(
-                  child: filteredRecords.isEmpty
-                      ? _buildEmptyState(theme, records.isEmpty)
-                      : ListView.builder(
-                          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
-                          itemCount: filteredRecords.length,
-                          itemBuilder: (context, index) {
-                            return _buildHistoryItem(context, filteredRecords[index]);
-                          },
+          final filteredRecords =
+              _filterRecords(records);
+
+          return Column(
+            crossAxisAlignment:
+                CrossAxisAlignment.stretch,
+            children: [
+              _buildImpactStatsCard(records),
+              _buildSearchAndFilters(theme),
+              Expanded(
+                child: filteredRecords.isEmpty
+                    ? _buildEmptyState(
+                        theme,
+                        records.isEmpty,
+                      )
+                    : ListView.builder(
+                        padding:
+                            const EdgeInsets.symmetric(
+                          horizontal: 24,
+                          vertical: 8,
                         ),
-                ),
-              ],
-            ),
+                        itemCount:
+                            filteredRecords.length,
+                        itemBuilder: (context, index) {
+                          return _buildHistoryItem(
+                            context,
+                            filteredRecords[index],
+                          );
+                        },
+                      ),
+              ),
+            ],
           );
         },
-        loading: () => const Center(child: CircularProgressIndicator()),
+        loading: () => Center(
+          child: CircularProgressIndicator(
+            color: AppTheme.neonGreen,
+          ),
+        ),
         error: (error, _) => Center(
-          child: Text('Terjadi kesalahan memuat riwayat: $error'),
+          child: Text(
+            'Terjadi kesalahan memuat riwayat: $error',
+          ),
         ),
       ),
     );
   }
 
-  List<ScanRecord> _filterRecords(List<ScanRecord> records) {
+  List<ScanRecord> _filterRecords(
+    List<ScanRecord> records,
+  ) {
     return records.where((record) {
       final matchesSearch = record.result.subcategory
           .toLowerCase()
           .contains(_searchQuery.toLowerCase());
-      
-      final matchesFilter = _activeFilter == 'Semua' ||
-          record.result.category.toLowerCase() == _activeFilter.toLowerCase();
-      
+
+      final matchesFilter =
+          _activeFilter == 'Semua' ||
+              record.result.category.toLowerCase() ==
+                  _activeFilter.toLowerCase();
+
       return matchesSearch && matchesFilter;
     }).toList();
   }
 
-  Widget _buildImpactStatsCard(List<ScanRecord> records) {
+  Widget _buildImpactStatsCard(
+    List<ScanRecord> records,
+  ) {
     final theme = Theme.of(context);
+    final brightness = theme.brightness;
     final totalScans = records.length;
-    
-    // Simple calculations for gamified ecological impact stats
-    final organicCount = records.where((r) => r.result.category.toLowerCase() == 'organik').length;
-    final nonOrganicCount = records.where((r) => r.result.category.toLowerCase() == 'non-organik').length;
-    
-    // Estimate: organic average weight 0.15kg, recyclables average count
-    final estCompostKg = (organicCount * 0.15).toStringAsFixed(1);
-    
+
+    final organicCount = records
+        .where(
+          (r) =>
+              r.result.category.toLowerCase() ==
+              'organik',
+        )
+        .length;
+    final nonOrganicCount = records
+        .where(
+          (r) =>
+              r.result.category.toLowerCase() ==
+              'non-organik',
+        )
+        .length;
+
+    final estCompostKg =
+        (organicCount * 0.15).toStringAsFixed(1);
+
     return Container(
       margin: const EdgeInsets.fromLTRB(24, 12, 24, 16),
       padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            theme.colorScheme.primary.withAlpha(200),
-            theme.colorScheme.secondary.withAlpha(200),
-          ],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(24),
-        boxShadow: [
-          BoxShadow(
-            color: theme.colorScheme.primary.withAlpha(40),
-            blurRadius: 12,
-            offset: const Offset(0, 6),
-          ),
-        ],
+      decoration: ClayDecoration.elevated(
+        color: AppTheme.neonGreen,
+        brightness: brightness,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              const Icon(Icons.stars_rounded, color: Colors.white, size: 24),
+              const Icon(
+                Icons.stars_rounded,
+                color: Color(0xFF0A1F00),
+                size: 24,
+              ),
               const SizedBox(width: 8),
               Text(
                 'Dampak Lingkungan Anda',
                 style: GoogleFonts.outfit(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
-                  color: Colors.white,
+                  color: const Color(0xFF0A1F00),
                 ),
               ),
             ],
           ),
           const SizedBox(height: 16),
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            mainAxisAlignment:
+                MainAxisAlignment.spaceAround,
             children: [
-              _buildStatDetail(totalScans.toString(), 'Sampah Dipilah'),
-              Container(width: 1, height: 32, color: Colors.white24),
-              _buildStatDetail('${estCompostKg}kg', 'Potensi Kompos'),
-              Container(width: 1, height: 32, color: Colors.white24),
-              _buildStatDetail(nonOrganicCount.toString(), 'Didaur Ulang'),
+              _buildStatDetail(
+                totalScans.toString(),
+                'Sampah Dipilah',
+              ),
+              Container(
+                width: 1,
+                height: 32,
+                color: const Color(0xFF0A1F00)
+                    .withAlpha(40),
+              ),
+              _buildStatDetail(
+                '${estCompostKg}kg',
+                'Potensi Kompos',
+              ),
+              Container(
+                width: 1,
+                height: 32,
+                color: const Color(0xFF0A1F00)
+                    .withAlpha(40),
+              ),
+              _buildStatDetail(
+                nonOrganicCount.toString(),
+                'Didaur Ulang',
+              ),
             ],
           ),
         ],
@@ -168,7 +210,7 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
           style: GoogleFonts.outfit(
             fontSize: 22,
             fontWeight: FontWeight.bold,
-            color: Colors.white,
+            color: const Color(0xFF0A1F00),
           ),
         ),
         const SizedBox(height: 2),
@@ -176,7 +218,8 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
           label,
           style: GoogleFonts.outfit(
             fontSize: 11,
-            color: Colors.white.withAlpha(200),
+            color:
+                const Color(0xFF0A1F00).withAlpha(180),
           ),
         ),
       ],
@@ -184,55 +227,98 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
   }
 
   Widget _buildSearchAndFilters(ThemeData theme) {
+    final brightness = theme.brightness;
+
     return Column(
       children: [
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24.0),
-          child: TextField(
-            onChanged: (val) {
-              setState(() {
-                _searchQuery = val;
-              });
-            },
-            style: GoogleFonts.outfit(fontSize: 14),
-            decoration: InputDecoration(
-              hintText: 'Cari sampah...',
-              prefixIcon: const Icon(Icons.search),
-              filled: true,
-              fillColor: theme.colorScheme.surfaceContainerLow,
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(16),
-                borderSide: BorderSide.none,
+          padding: const EdgeInsets.symmetric(
+            horizontal: 24.0,
+          ),
+          child: Container(
+            decoration: ClayDecoration.input(
+              color:
+                  theme.colorScheme.surfaceContainerLow,
+              brightness: brightness,
+            ),
+            child: TextField(
+              onChanged: (val) {
+                setState(() {
+                  _searchQuery = val;
+                });
+              },
+              style:
+                  GoogleFonts.outfit(fontSize: 14),
+              decoration: InputDecoration(
+                hintText: 'Cari sampah...',
+                prefixIcon: const Icon(Icons.search),
+                filled: false,
+                border: InputBorder.none,
+                contentPadding:
+                    const EdgeInsets.symmetric(
+                  vertical: 14,
+                ),
               ),
-              contentPadding: const EdgeInsets.symmetric(vertical: 0),
             ),
           ),
         ),
         const SizedBox(height: 12),
         SingleChildScrollView(
           scrollDirection: Axis.horizontal,
-          padding: const EdgeInsets.symmetric(horizontal: 24),
+          padding: const EdgeInsets.symmetric(
+            horizontal: 24,
+          ),
           child: Row(
-            children: ['Semua', 'Organik', 'Non-Organik', 'Residu'].map((filter) {
-              final isSelected = _activeFilter == filter;
+            children: [
+              'Semua',
+              'Organik',
+              'Non-Organik',
+              'Residu',
+            ].map((filter) {
+              final isSelected =
+                  _activeFilter == filter;
               return Padding(
-                padding: const EdgeInsets.only(right: 8.0),
-                child: FilterChip(
-                  label: Text(
-                    filter,
-                    style: GoogleFonts.outfit(
-                      fontSize: 12,
-                      fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                    ),
-                  ),
-                  selected: isSelected,
-                  onSelected: (selected) {
+                padding:
+                    const EdgeInsets.only(right: 8.0),
+                child: GestureDetector(
+                  onTap: () {
                     setState(() {
                       _activeFilter = filter;
                     });
                   },
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
+                  child: AnimatedContainer(
+                    duration: const Duration(
+                      milliseconds: 200,
+                    ),
+                    padding:
+                        const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 8,
+                    ),
+                    decoration: isSelected
+                        ? ClayDecoration.pill(
+                            color: AppTheme.neonGreen
+                                .withAlpha(35),
+                            brightness: brightness,
+                          )
+                        : ClayDecoration.pill(
+                            color: theme.colorScheme
+                                .surfaceContainerLow,
+                            brightness: brightness,
+                          ),
+                    child: Text(
+                      filter,
+                      style: GoogleFonts.outfit(
+                        fontSize: 12,
+                        fontWeight: isSelected
+                            ? FontWeight.bold
+                            : FontWeight.normal,
+                        color: isSelected
+                            ? AppTheme.neonGreen
+                            : theme.colorScheme
+                                .onSurfaceVariant,
+                      ),
+                    ),
                   ),
                 ),
               );
@@ -244,25 +330,35 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
     );
   }
 
-  Widget _buildEmptyState(ThemeData theme, bool isHistoryFullyEmpty) {
+  Widget _buildEmptyState(
+    ThemeData theme,
+    bool isHistoryFullyEmpty,
+  ) {
+    final brightness = theme.brightness;
+
     return Center(
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 32.0),
+        padding: const EdgeInsets.symmetric(
+          horizontal: 32.0,
+        ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Container(
               padding: const EdgeInsets.all(24),
-              decoration: BoxDecoration(
-                color: theme.colorScheme.surfaceContainerHigh.withAlpha(128),
-                shape: BoxShape.circle,
-              ),
+              decoration: ClayDecoration.elevated(
+                color: theme
+                    .colorScheme.surfaceContainerHigh,
+                brightness: brightness,
+              ).copyWith(shape: BoxShape.circle),
               child: Icon(
                 isHistoryFullyEmpty
-                    ? Icons.center_focus_weak_rounded
+                    ? Icons
+                        .center_focus_weak_rounded
                     : Icons.search_off_rounded,
                 size: 64,
-                color: theme.colorScheme.primary.withAlpha(150),
+                color:
+                    AppTheme.neonGreen.withAlpha(150),
               ),
             ),
             const SizedBox(height: 20),
@@ -278,12 +374,17 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
             const SizedBox(height: 8),
             Text(
               isHistoryFullyEmpty
-                  ? 'Mulai pindai foto sampah Anda di tab Pindai untuk melihat catatan riwayat di sini.'
-                  : 'Cobalah mengubah kata kunci pencarian Anda atau ganti filter kategori.',
+                  ? 'Mulai pindai foto sampah Anda di '
+                      'tab Pindai untuk melihat catatan '
+                      'riwayat di sini.'
+                  : 'Cobalah mengubah kata kunci '
+                      'pencarian Anda atau ganti filter '
+                      'kategori.',
               textAlign: TextAlign.center,
               style: GoogleFonts.outfit(
                 fontSize: 13.5,
-                color: theme.colorScheme.onSurfaceVariant,
+                color:
+                    theme.colorScheme.onSurfaceVariant,
               ),
             ),
           ],
@@ -292,13 +393,18 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
     );
   }
 
-  Widget _buildHistoryItem(BuildContext context, ScanRecord record) {
+  Widget _buildHistoryItem(
+    BuildContext context,
+    ScanRecord record,
+  ) {
     final theme = Theme.of(context);
+    final brightness = theme.brightness;
     final binColors = theme.extension<BinColors>();
 
     Color getCategoryColor() {
       if (binColors != null) {
-        switch (record.result.category.toLowerCase()) {
+        switch (
+            record.result.category.toLowerCase()) {
           case 'organik':
             return binColors.organik;
           case 'non-organik':
@@ -307,11 +413,12 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
             return binColors.residu;
         }
       }
-      return theme.colorScheme.primary;
+      return AppTheme.neonGreen;
     }
 
     final catColor = getCategoryColor();
-    final timeStr = _formatTimestamp(record.timestamp);
+    final timeStr =
+        _formatTimestamp(record.timestamp);
 
     return Dismissible(
       key: Key(record.id),
@@ -322,19 +429,28 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
         margin: const EdgeInsets.only(bottom: 12),
         decoration: BoxDecoration(
           color: theme.colorScheme.error,
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(24),
         ),
-        child: const Icon(Icons.delete_outline, color: Colors.white, size: 28),
+        child: const Icon(
+          Icons.delete_outline,
+          color: Colors.white,
+          size: 28,
+        ),
       ),
       onDismissed: (direction) {
-        ref.read(historyProvider.notifier).deleteRecord(record.id);
+        ref
+            .read(historyProvider.notifier)
+            .deleteRecord(record.id);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Catatan dihapus'),
+            content:
+                const Text('Catatan dihapus'),
             action: SnackBarAction(
               label: 'Batal',
               onPressed: () {
-                ref.read(historyProvider.notifier).addRecord(record);
+                ref
+                    .read(historyProvider.notifier)
+                    .addRecord(record);
               },
             ),
           ),
@@ -342,22 +458,22 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
       },
       child: Container(
         margin: const EdgeInsets.only(bottom: 12),
-        child: Card(
-          elevation: 0,
-          color: theme.colorScheme.surfaceContainerLow,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20),
-            side: BorderSide(color: theme.colorScheme.outlineVariant.withAlpha(40)),
-          ),
-          child: InkWell(
-            onTap: () => _showRecordDetails(context, record),
-            borderRadius: BorderRadius.circular(20),
+        child: GestureDetector(
+          onTap: () =>
+              _showRecordDetails(context, record),
+          child: Container(
+            decoration: ClayDecoration.card(
+              color: theme
+                  .colorScheme.surfaceContainerLow,
+              brightness: brightness,
+            ),
             child: Padding(
               padding: const EdgeInsets.all(12.0),
               child: Row(
                 children: [
                   ClipRRect(
-                    borderRadius: BorderRadius.circular(14),
+                    borderRadius:
+                        BorderRadius.circular(18),
                     child: Image.file(
                       File(record.imagePath),
                       width: 64,
@@ -367,8 +483,19 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
                         return Container(
                           width: 64,
                           height: 64,
-                          color: theme.colorScheme.surfaceContainerHighest,
-                          child: Icon(Icons.image_not_supported_rounded, color: theme.colorScheme.onSurfaceVariant),
+                          decoration:
+                              ClayDecoration.card(
+                            color: theme.colorScheme
+                                .surfaceContainerHighest,
+                            brightness: brightness,
+                            radius: 18,
+                          ),
+                          child: Icon(
+                            Icons
+                                .image_not_supported_rounded,
+                            color: theme.colorScheme
+                                .onSurfaceVariant,
+                          ),
                         );
                       },
                     ),
@@ -376,21 +503,34 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
                   const SizedBox(width: 14),
                   Expanded(
                     child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                      crossAxisAlignment:
+                          CrossAxisAlignment.start,
                       children: [
                         Row(
                           children: [
                             Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                              decoration: BoxDecoration(
-                                color: catColor.withAlpha(25),
-                                borderRadius: BorderRadius.circular(6),
+                              padding:
+                                  const EdgeInsets
+                                      .symmetric(
+                                horizontal: 8,
+                                vertical: 2,
+                              ),
+                              decoration:
+                                  BoxDecoration(
+                                color: catColor
+                                    .withAlpha(25),
+                                borderRadius:
+                                    BorderRadius
+                                        .circular(8),
                               ),
                               child: Text(
-                                record.result.category.toUpperCase(),
-                                style: GoogleFonts.outfit(
+                                record.result.category
+                                    .toUpperCase(),
+                                style:
+                                    GoogleFonts.outfit(
                                   fontSize: 9,
-                                  fontWeight: FontWeight.bold,
+                                  fontWeight:
+                                      FontWeight.bold,
                                   color: catColor,
                                 ),
                               ),
@@ -398,9 +538,13 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
                             const Spacer(),
                             Text(
                               timeStr,
-                              style: GoogleFonts.outfit(
+                              style:
+                                  GoogleFonts.outfit(
                                 fontSize: 11,
-                                color: theme.colorScheme.onSurfaceVariant.withAlpha(150),
+                                color: theme
+                                    .colorScheme
+                                    .onSurfaceVariant
+                                    .withAlpha(150),
                               ),
                             ),
                           ],
@@ -409,7 +553,8 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
                         Text(
                           record.result.subcategory,
                           maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
+                          overflow:
+                              TextOverflow.ellipsis,
                           style: GoogleFonts.outfit(
                             fontSize: 15,
                             fontWeight: FontWeight.bold,
@@ -418,13 +563,25 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
                         const SizedBox(height: 4),
                         Row(
                           children: [
-                            Icon(Icons.thumb_up_alt_outlined, color: theme.colorScheme.onSurfaceVariant.withAlpha(120), size: 12),
+                            Icon(
+                              Icons
+                                  .thumb_up_alt_outlined,
+                              color: theme
+                                  .colorScheme
+                                  .onSurfaceVariant
+                                  .withAlpha(120),
+                              size: 12,
+                            ),
                             const SizedBox(width: 4),
                             Text(
-                              'Akurasi: ${(record.result.confidence * 100).toStringAsFixed(0)}%',
-                              style: GoogleFonts.outfit(
+                              'Akurasi: '
+                              '${(record.result.confidence * 100).toStringAsFixed(0)}%',
+                              style:
+                                  GoogleFonts.outfit(
                                 fontSize: 11,
-                                color: theme.colorScheme.onSurfaceVariant,
+                                color: theme
+                                    .colorScheme
+                                    .onSurfaceVariant,
                               ),
                             ),
                           ],
@@ -449,18 +606,26 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
     } else if (diff.inHours < 24) {
       return '${diff.inHours} jam lalu';
     } else {
-      final months = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+      final months = [
+        'Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun',
+        'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des',
+      ];
       return '${dt.day} ${months[dt.month - 1]}';
     }
   }
 
-  void _showRecordDetails(BuildContext context, ScanRecord record) {
+  void _showRecordDetails(
+    BuildContext context,
+    ScanRecord record,
+  ) {
     final theme = Theme.of(context);
+    final brightness = theme.brightness;
     final binColors = theme.extension<BinColors>();
 
     Color getCategoryColor() {
       if (binColors != null) {
-        switch (record.result.category.toLowerCase()) {
+        switch (
+            record.result.category.toLowerCase()) {
           case 'organik':
             return binColors.organik;
           case 'non-organik':
@@ -469,7 +634,7 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
             return binColors.residu;
         }
       }
-      return theme.colorScheme.primary;
+      return AppTheme.neonGreen;
     }
 
     final catColor = getCategoryColor();
@@ -479,22 +644,32 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (context) => Container(
-        height: MediaQuery.of(context).size.height * 0.8,
-        decoration: BoxDecoration(
+        height:
+            MediaQuery.of(context).size.height * 0.8,
+        decoration: ClayDecoration.elevated(
           color: theme.colorScheme.surface,
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
+          brightness: brightness,
+        ).copyWith(
+          borderRadius: const BorderRadius.vertical(
+            top: Radius.circular(32),
+          ),
         ),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
+          crossAxisAlignment:
+              CrossAxisAlignment.stretch,
           children: [
             Center(
               child: Container(
                 width: 48,
                 height: 4,
-                margin: const EdgeInsets.symmetric(vertical: 12),
+                margin: const EdgeInsets.symmetric(
+                  vertical: 12,
+                ),
                 decoration: BoxDecoration(
-                  color: theme.colorScheme.outlineVariant,
-                  borderRadius: BorderRadius.circular(2),
+                  color:
+                      theme.colorScheme.outlineVariant,
+                  borderRadius:
+                      BorderRadius.circular(2),
                 ),
               ),
             ),
@@ -502,19 +677,33 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
               child: SingleChildScrollView(
                 padding: const EdgeInsets.all(24.0),
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  crossAxisAlignment:
+                      CrossAxisAlignment.stretch,
                   children: [
                     ClipRRect(
-                      borderRadius: BorderRadius.circular(20),
+                      borderRadius:
+                          BorderRadius.circular(24),
                       child: Image.file(
                         File(record.imagePath),
                         height: 220,
                         fit: BoxFit.cover,
-                        errorBuilder: (context, _, _) {
+                        errorBuilder:
+                            (context, _, _) {
                           return Container(
                             height: 180,
-                            color: theme.colorScheme.surfaceContainerHighest,
-                            child: Icon(Icons.image_not_supported_rounded, color: theme.colorScheme.onSurfaceVariant, size: 48),
+                            decoration:
+                                ClayDecoration.card(
+                              color: theme.colorScheme
+                                  .surfaceContainerHighest,
+                              brightness: brightness,
+                            ),
+                            child: Icon(
+                              Icons
+                                  .image_not_supported_rounded,
+                              color: theme.colorScheme
+                                  .onSurfaceVariant,
+                              size: 48,
+                            ),
                           );
                         },
                       ),
@@ -523,15 +712,25 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
                     Row(
                       children: [
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                          padding: const EdgeInsets
+                              .symmetric(
+                            horizontal: 10,
+                            vertical: 4,
+                          ),
                           decoration: BoxDecoration(
-                            color: catColor.withAlpha(25),
-                            borderRadius: BorderRadius.circular(8),
+                            color: catColor
+                                .withAlpha(25),
+                            borderRadius:
+                                BorderRadius.circular(
+                              10,
+                            ),
                           ),
                           child: Text(
-                            record.result.category.toUpperCase(),
+                            record.result.category
+                                .toUpperCase(),
                             style: GoogleFonts.outfit(
-                              fontWeight: FontWeight.bold,
+                              fontWeight:
+                                  FontWeight.bold,
                               fontSize: 12,
                               color: catColor,
                             ),
@@ -555,9 +754,16 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                    const Padding(
-                      padding: EdgeInsets.symmetric(vertical: 16.0),
-                      child: Divider(),
+                    Padding(
+                      padding:
+                          const EdgeInsets.symmetric(
+                        vertical: 16.0,
+                      ),
+                      child: Divider(
+                        color: theme
+                            .colorScheme.outlineVariant
+                            .withAlpha(60),
+                      ),
                     ),
                     Text(
                       'Langkah Pengelolaan:',
@@ -567,29 +773,46 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
                       ),
                     ),
                     const SizedBox(height: 10),
-                    ...record.result.instructions.map((step) => Padding(
-                          padding: const EdgeInsets.only(bottom: 8),
-                          child: Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Padding(
-                                padding: const EdgeInsets.only(top: 3.0),
-                                child: Icon(Icons.check_circle_outline, color: catColor, size: 18),
+                    ...record.result.instructions.map(
+                      (step) => Padding(
+                        padding:
+                            const EdgeInsets.only(
+                          bottom: 8,
+                        ),
+                        child: Row(
+                          crossAxisAlignment:
+                              CrossAxisAlignment.start,
+                          children: [
+                            Padding(
+                              padding:
+                                  const EdgeInsets.only(
+                                top: 3.0,
                               ),
-                              const SizedBox(width: 10),
-                              Expanded(
-                                child: Text(
-                                  step,
-                                  style: GoogleFonts.outfit(
-                                    fontSize: 14.5,
-                                    height: 1.4,
-                                    color: theme.colorScheme.onSurface,
-                                  ),
+                              child: Icon(
+                                Icons
+                                    .check_circle_outline,
+                                color: catColor,
+                                size: 18,
+                              ),
+                            ),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: Text(
+                                step,
+                                style:
+                                    GoogleFonts.outfit(
+                                  fontSize: 14.5,
+                                  height: 1.4,
+                                  color: theme
+                                      .colorScheme
+                                      .onSurface,
                                 ),
                               ),
-                            ],
-                          ),
-                        )),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
                     const SizedBox(height: 24),
                   ],
                 ),
@@ -607,30 +830,43 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
       builder: (context) => AlertDialog(
         title: Text(
           'Hapus Semua Riwayat?',
-          style: GoogleFonts.outfit(fontWeight: FontWeight.bold),
+          style: GoogleFonts.outfit(
+            fontWeight: FontWeight.bold,
+          ),
         ),
         content: Text(
-          'Tindakan ini akan menghapus seluruh catatan klasifikasi sampah Anda secara permanen.',
+          'Tindakan ini akan menghapus seluruh catatan '
+          'klasifikasi sampah Anda secara permanen.',
           style: GoogleFonts.outfit(),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text('Batal', style: GoogleFonts.outfit()),
+            child: Text(
+              'Batal',
+              style: GoogleFonts.outfit(),
+            ),
           ),
           ElevatedButton(
             onPressed: () {
-              ref.read(historyProvider.notifier).clearHistory();
+              ref
+                  .read(historyProvider.notifier)
+                  .clearHistory();
               Navigator.pop(context);
             },
             style: ElevatedButton.styleFrom(
-              backgroundColor: Theme.of(context).colorScheme.error,
+              backgroundColor:
+                  Theme.of(context).colorScheme.error,
               foregroundColor: Colors.white,
             ),
-            child: Text('Hapus', style: GoogleFonts.outfit(fontWeight: FontWeight.bold)),
+            child: Text(
+              'Hapus',
+              style: GoogleFonts.outfit(
+                fontWeight: FontWeight.bold,
+              ),
+            ),
           ),
         ],
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       ),
     );
   }
