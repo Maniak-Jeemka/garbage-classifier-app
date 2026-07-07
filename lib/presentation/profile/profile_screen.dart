@@ -14,7 +14,6 @@ class ProfileScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final historyAsync = ref.watch(historyProvider);
-    final theme = Theme.of(context);
 
     return Scaffold(
       appBar: const CustomAppBar(title: 'Profil Saya'),

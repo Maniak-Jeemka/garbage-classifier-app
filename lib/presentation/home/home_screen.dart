@@ -22,7 +22,6 @@ class HomeScreen extends ConsumerWidget {
     final notifier = ref.read(homeProvider.notifier);
     final classificationState =
         ref.watch(classificationControllerProvider);
-    final theme = Theme.of(context);
 
     // Listen to classification results and save to history
     ref.listen(classificationControllerProvider,
