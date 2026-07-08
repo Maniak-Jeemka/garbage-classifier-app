@@ -2,10 +2,12 @@ import 'dart:async';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/user_model.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 
 class AuthService {
   final FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final GoogleSignIn _googleSignIn = GoogleSignIn();
 
   Stream<User?> get authStateChanges => _firebaseAuth.authStateChanges();
 
@@ -159,4 +161,54 @@ class AuthService {
         return e.message ?? 'An unknown error occurred.';
     }
   }
+
+  Future<User?> signInWithGoogle() async {
+  try {
+    // Pilih akun Google
+    final GoogleSignInAccount? googleUser =
+        await _googleSignIn.signIn();
+
+    if (googleUser == null) {
+      // User membatalkan login
+      return null;
+    }
+
+    // Ambil token autentikasi
+    final GoogleSignInAuthentication googleAuth =
+        await googleUser.authentication;
+
+    // Buat credential Firebase
+    final credential = GoogleAuthProvider.credential(
+      accessToken: googleAuth.accessToken,
+      idToken: googleAuth.idToken,
+    );
+
+    // Login ke Firebase
+    final UserCredential userCredential =
+        await _firebaseAuth.signInWithCredential(credential);
+
+    final user = userCredential.user;
+
+    if (user != null) {
+      final doc = _firestore.collection('users').doc(user.uid);
+
+      if (!(await doc.get()).exists) {
+        final newUser = UserModel(
+          uid: user.uid,
+          name: user.displayName ?? 'User',
+          email: user.email ?? '',
+          createdAt: DateTime.now(),
+        );
+
+        await doc.set(newUser.toJson());
+      }
+    }
+
+    return user;
+  } on FirebaseAuthException catch (e) {
+    throw Exception(_getFirebaseAuthErrorMessage(e));
+  } catch (e) {
+    throw Exception('Google Sign-In failed: $e');
+  }
+}
 }

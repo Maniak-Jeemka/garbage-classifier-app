@@ -45,6 +45,21 @@ class AuthNotifier extends _$AuthNotifier {
     }
   }
 
+  Future<void> loginWithGoogle() async {
+  state = const AsyncValue.loading();
+
+  try {
+    await ref.read(authServiceProvider).signInWithGoogle();
+
+    // Tidak perlu mengubah state di sini.
+    // Firebase Auth akan memicu authStateChanges,
+    // lalu build() akan otomatis mengambil data user.
+  } catch (e, st) {
+    state = AsyncValue.error(e, st);
+    rethrow;
+  }
+}
+
   /// Creates a new account.
   ///
   /// On success, Firebase auth state changes automatically.
