@@ -45,8 +45,10 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
       if (mounted) {
         await ClayFeedbackDialog.showSuccess(
           context,
-          title: 'Registrasi Berhasil! 🌟',
-          message: 'Akun Anda telah dibuat. Mari jaga Bali bersama!',
+          title: 'Registrasi Berhasil!',
+          message:  'Kami telah mengirim email verifikasi ke alamat email Anda.\n\n'
+                      'Silakan buka inbox (atau folder Spam), klik tautan verifikasi, '
+                      'kemudian login kembali.',
         );
         if (mounted) {
           Navigator.of(context).popUntil((route) => route.isFirst);

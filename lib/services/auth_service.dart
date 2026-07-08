@@ -2,10 +2,12 @@ import 'dart:async';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/user_model.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 
 class AuthService {
   final FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final GoogleSignIn _googleSignIn = GoogleSignIn();
 
   Stream<User?> get authStateChanges => _firebaseAuth.authStateChanges();
 
@@ -72,13 +74,28 @@ class AuthService {
         email: email,
         password: password,
       );
-      return userCredential.user;
-    } on FirebaseAuthException catch (e) {
-      throw Exception(_getFirebaseAuthErrorMessage(e));
-    } catch (e) {
-      throw Exception('An unknown error occurred.');
-    }
-  }
+      final user = userCredential.user;
+
+      if (user != null) {
+        await user.reload();
+        final refreshedUser = _firebaseAuth.currentUser;
+
+        if (refreshedUser != null && !refreshedUser.emailVerified) {
+          await _firebaseAuth.signOut();
+
+          throw Exception(
+            'Email belum diverifikasi. Silakan cek inbox Anda terlebih dahulu.',
+          );
+        }
+      }
+
+return user;
+} on FirebaseAuthException catch (e) {
+  throw Exception(_getFirebaseAuthErrorMessage(e));
+} catch (e) {
+  throw Exception('An unknown error occurred.');
+}
+}
 
   Future<UserModel?> createUserWithEmailAndPassword({
     required String name,
@@ -93,6 +110,7 @@ class AuthService {
 
       final user = userCredential.user;
       if (user != null) {
+        await user.sendEmailVerification();
         final newUser = UserModel(
           uid: user.uid,
           name: name,
@@ -104,6 +122,8 @@ class AuthService {
             .collection('users')
             .doc(user.uid)
             .set(newUser.toJson());
+        
+        await signOut();
 
         return newUser;
       }
@@ -125,7 +145,28 @@ class AuthService {
     }
   }
 
+  Future<void> resendVerificationEmail() async {
+  try {
+    final user = _firebaseAuth.currentUser;
+
+    if (user == null) {
+      throw Exception('Tidak ada pengguna yang sedang login.');
+    }
+
+    await user.reload();
+
+    if (!user.emailVerified) {
+      await user.sendEmailVerification();
+    }
+  } on FirebaseAuthException catch (e) {
+    throw Exception(_getFirebaseAuthErrorMessage(e));
+  } catch (e) {
+    throw Exception('Gagal mengirim ulang email verifikasi.');
+  }
+}
+
   Future<void> signOut() async {
+    await _googleSignIn.signOut();
     await _firebaseAuth.signOut();
   }
 
@@ -159,4 +200,54 @@ class AuthService {
         return e.message ?? 'An unknown error occurred.';
     }
   }
+
+  Future<User?> signInWithGoogle() async {
+  try {
+    // Pilih akun Google
+    final GoogleSignInAccount? googleUser =
+        await _googleSignIn.signIn();
+
+    if (googleUser == null) {
+      // User membatalkan login
+      return null;
+    }
+
+    // Ambil token autentikasi
+    final GoogleSignInAuthentication googleAuth =
+        await googleUser.authentication;
+
+    // Buat credential Firebase
+    final credential = GoogleAuthProvider.credential(
+      accessToken: googleAuth.accessToken,
+      idToken: googleAuth.idToken,
+    );
+
+    // Login ke Firebase
+    final UserCredential userCredential =
+        await _firebaseAuth.signInWithCredential(credential);
+
+    final user = userCredential.user;
+
+    if (user != null) {
+      final doc = _firestore.collection('users').doc(user.uid);
+
+      if (!(await doc.get()).exists) {
+        final newUser = UserModel(
+          uid: user.uid,
+          name: user.displayName ?? 'User',
+          email: user.email ?? '',
+          createdAt: DateTime.now(),
+        );
+
+        await doc.set(newUser.toJson());
+      }
+    }
+
+    return user;
+  } on FirebaseAuthException catch (e) {
+    throw Exception(_getFirebaseAuthErrorMessage(e));
+  } catch (e) {
+    throw Exception('Google Sign-In failed: $e');
+  }
+}
 }

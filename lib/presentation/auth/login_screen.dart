@@ -53,6 +53,25 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     }
   }
 
+  Future<void> _loginWithGoogle() async {
+  try {
+    await ref.read(authProvider.notifier).loginWithGoogle();
+
+    if (mounted) {
+      await ClayFeedbackDialog.showSuccess(
+        context,
+        title: 'Login Berhasil!',
+        message: 'Selamat datang kembali di Bali Waste Classifier.',
+      );
+      if (mounted) {
+        Navigator.of(context).popUntil((route) => route.isFirst);
+      }
+    }
+  } catch (_) {
+    // Error akan ditangani oleh listener di bawah.
+  }
+}
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -154,6 +173,23 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     isLoading: authState.isLoading,
                     onPressed: _login,
                   ),
+
+                  const SizedBox(height: 20),
+                    Text(
+                      "OR",
+                      style: theme.textTheme.bodyMedium,
+                    ),
+
+                    const SizedBox(height: 20),
+
+                    OutlinedButton.icon(
+                      onPressed: authState.isLoading ? null : _loginWithGoogle,
+                      icon: Image.asset('assets/images/google.png', width: 22, height: 22,),
+                      label: const Text("Continue with Google"),
+                      style: OutlinedButton.styleFrom(
+                        padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                      ),
+                    ),
                 ],
               ),
             ),
