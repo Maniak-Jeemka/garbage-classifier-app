@@ -74,13 +74,28 @@ class AuthService {
         email: email,
         password: password,
       );
-      return userCredential.user;
-    } on FirebaseAuthException catch (e) {
-      throw Exception(_getFirebaseAuthErrorMessage(e));
-    } catch (e) {
-      throw Exception('An unknown error occurred.');
-    }
-  }
+      final user = userCredential.user;
+
+      if (user != null) {
+        await user.reload();
+        final refreshedUser = _firebaseAuth.currentUser;
+
+        if (refreshedUser != null && !refreshedUser.emailVerified) {
+          await _firebaseAuth.signOut();
+
+          throw Exception(
+            'Email belum diverifikasi. Silakan cek inbox Anda terlebih dahulu.',
+          );
+        }
+      }
+
+return user;
+} on FirebaseAuthException catch (e) {
+  throw Exception(_getFirebaseAuthErrorMessage(e));
+} catch (e) {
+  throw Exception('An unknown error occurred.');
+}
+}
 
   Future<UserModel?> createUserWithEmailAndPassword({
     required String name,
@@ -95,6 +110,7 @@ class AuthService {
 
       final user = userCredential.user;
       if (user != null) {
+        await user.sendEmailVerification();
         final newUser = UserModel(
           uid: user.uid,
           name: name,
@@ -106,6 +122,8 @@ class AuthService {
             .collection('users')
             .doc(user.uid)
             .set(newUser.toJson());
+        
+        await signOut();
 
         return newUser;
       }
@@ -127,7 +145,28 @@ class AuthService {
     }
   }
 
+  Future<void> resendVerificationEmail() async {
+  try {
+    final user = _firebaseAuth.currentUser;
+
+    if (user == null) {
+      throw Exception('Tidak ada pengguna yang sedang login.');
+    }
+
+    await user.reload();
+
+    if (!user.emailVerified) {
+      await user.sendEmailVerification();
+    }
+  } on FirebaseAuthException catch (e) {
+    throw Exception(_getFirebaseAuthErrorMessage(e));
+  } catch (e) {
+    throw Exception('Gagal mengirim ulang email verifikasi.');
+  }
+}
+
   Future<void> signOut() async {
+    await _googleSignIn.signOut();
     await _firebaseAuth.signOut();
   }
 

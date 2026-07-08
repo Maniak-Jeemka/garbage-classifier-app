@@ -60,7 +60,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     if (mounted) {
       await ClayFeedbackDialog.showSuccess(
         context,
-        title: 'Login Berhasil! 🌿',
+        title: 'Login Berhasil!',
         message: 'Selamat datang kembali di Bali Waste Classifier.',
       );
       if (mounted) {
