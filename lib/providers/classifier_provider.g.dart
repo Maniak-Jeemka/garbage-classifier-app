@@ -54,4 +54,4 @@ final class ClassifierProvider
   }
 }
 
-String _$classifierHash() => r'c3378754ed775bbc5b4228cb71108cd337d43deb';
+String _$classifierHash() => r'5a81e2d4b1706e7b4d1acebf486b16b2a9a3fbad';

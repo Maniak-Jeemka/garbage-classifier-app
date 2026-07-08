@@ -18,7 +18,10 @@ class ClassificationController extends _$ClassificationController {
     state = await AsyncValue.guard(() async {
       final service = ref.read(classifierProvider);
       final homeState = ref.read(homeProvider);
-      return await service.classify(image, userContext: homeState.optionalContext);
+      return await service.classify(
+        image,
+        userContext: homeState.optionalContext,
+      );
     });
   }
 }

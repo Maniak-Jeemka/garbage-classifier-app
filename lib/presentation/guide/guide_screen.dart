@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../theme/app_theme.dart';
-import '../theme/clay_decoration.dart';
-import '../theme/custom_app_bar.dart';
+import '../widgets/clay_container.dart';
 
 /// Bali waste-sorting guide with trivia corner,
 /// bin category cards, and eco-tips.
@@ -18,31 +17,13 @@ class _GuideScreenState extends State<GuideScreen> {
   int _triviaIndex = 0;
 
   final List<String> _triviaFacts = [
-    'Bali memproduksi sekitar 4.281 ton sampah setiap '
-        'hari, namun hanya sekitar 10-15% yang berhasil '
-        'didaur ulang.',
-    'Sejak 2019, Pemprov Bali secara resmi melarang '
-        'penggunaan kantong plastik sekali pakai, '
-        'styrofoam, dan sedotan plastik di supermarket '
-        'dan pertokoan.',
-    'Sampah organik seperti sisa makanan dan sesaji '
-        '"Canang Sari" menyumbang lebih dari 60% total '
-        'sampah rumah tangga di Bali.',
-    'Menumpuknya sampah organik di TPA Suwung tanpa '
-        'oksigen menghasilkan gas metana, gas rumah kaca '
-        'yang 25 kali lebih kuat menangkap panas '
-        'dibanding CO2.',
-    'Membersihkan atau membilas kemasan plastik/kaca '
-        'dari sisa makanan meningkatkan peluang daur '
-        'ulangnya hingga 90% di pusat pemilahan Bali.',
-    'Sungai Watch, sebuah LSM lingkungan di Bali, '
-        'telah memasang lebih dari 150 jaring sampah di '
-        'sungai-sungai Bali dan mengumpulkan ratusan '
-        'ton plastik.',
-    'Membuat lubang biopori di halaman rumah adalah '
-        'cara termudah menyerap air hujan sekaligus '
-        'mengompos sisa canang sari dan dedaunan '
-        'di Bali.',
+    'Bali memproduksi sekitar 4.281 ton sampah setiap hari, namun hanya sekitar 10-15% yang berhasil didaur ulang.',
+    'Sejak 2019, Pemprov Bali secara resmi melarang penggunaan kantong plastik sekali pakai, styrofoam, dan sedotan plastik di supermarket dan pertokoan.',
+    'Sampah organik seperti sisa makanan dan sesaji ("Canang Sari") menyumbang lebih dari 60% total sampah rumah tangga di Bali.',
+    'Menumpuknya sampah organik di TPA Suwung tanpa oksigen menghasilkan gas metana, gas rumah kaca yang 25 kali lebih kuat menangkap panas dibanding CO2.',
+    'Membersihkan atau membilas kemasan plastik/kaca dari sisa makanan meningkatkan peluang daur ulangnya hingga 90% di pusat pemilahan Bali.',
+    'Sungai Watch, sebuah LSM lingkungan di Bali, telah memasang lebih dari 150 jaring sampah di sungai-sungai Bali dan mengumpulkan ratusan ton plastik.',
+    'Membuat lubang biopori di halaman rumah adalah cara termudah menyerap air hujan sekaligus mengompos sisa canang sari dan dedaunan di Bali.',
   ];
 
   void _nextTrivia() {
@@ -164,19 +145,100 @@ class _GuideScreenState extends State<GuideScreen> {
             ],
           ),
         ),
+        child: SafeArea(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.symmetric(
+              horizontal: 24.0,
+              vertical: 16.0,
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                _buildTriviaCorner(theme),
+                const SizedBox(height: 28),
+                Text(
+                  'Tiga Wadah Sampah Bali',
+                  style: GoogleFonts.outfit(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: theme.colorScheme.onSurface,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  'Berdasarkan Pergub Bali No. 47 Tahun 2019 tentang Pengelolaan Sampah Berbasis Sumber.',
+                  style: GoogleFonts.outfit(
+                    fontSize: 12.5,
+                    color: theme.colorScheme.onSurfaceVariant,
+                  ),
+                ),
+                const SizedBox(height: 16),
+
+                // Bin Cards
+                _buildBinCard(
+                  title: '1. ORGANIK (Hijau)',
+                  description:
+                      'Sampah alami yang mudah membusuk dan terurai kembali ke tanah.',
+                  details:
+                      '• Sisa makanan & potongan sayur\n'
+                      '• Daun kering & ranting kebun\n'
+                      '• Bekas sesaji Canang Sari (bunga & janur)\n'
+                      '• Kulit buah\n\n'
+                      'Tips Bali: Jadikan kompos mandiri di rumah atau masukkan ke lubang biopori keluarga untuk menyuburkan tanah Bali.',
+                  color: binColors?.organik ?? Colors.green,
+                ),
+                const SizedBox(height: 14),
+                _buildBinCard(
+                  title: '2. NON-ORGANIK (Kuning)',
+                  description:
+                      'Bahan yang tidak membusuk tapi bernilai untuk didaur ulang kembali.',
+                  details:
+                      '• Botol plastik minuman (PET/HDPE)\n'
+                      '• Kaleng aluminium & kemasan logam\n'
+                      '• Kertas, kardus, koran & buku\n'
+                      '• Botol & wadah kaca\n\n'
+                      'Tips Bali: Bilas dari sisa makanan/cairan terlebih dahulu. Wadah yang kotor tidak diterima oleh bank sampah lokal.',
+                  color: binColors?.nonOrganik ?? Colors.amber,
+                ),
+                const SizedBox(height: 14),
+                _buildBinCard(
+                  title: '3. RESIDU (Merah/Abu)',
+                  description:
+                      'Sampah yang tidak bisa didaur ulang maupun dikomposkan. Harus ke TPA.',
+                  details:
+                      '• Popok bayi & pembalut bekas\n'
+                      '• Pembalut/tissue basah kotor\n'
+                      '• Plastik sachet multi-layer (kemasan kopi/snack)\n'
+                      '• Puntung rokok & pecahan keramik\n\n'
+                      'Tips Bali: Kurangi penggunaan barang sachet dan beralihlah ke produk isi ulang (refill) guna meminimalisir beban TPA Suwung.',
+                  color: binColors?.residu ?? Colors.red,
+                ),
+                const SizedBox(height: 28),
+
+                // Eco tips section
+                Text(
+                  'Langkah Menuju Bali Zero-Waste',
+                  style: GoogleFonts.outfit(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                _buildEcoTipsSection(theme),
+                const SizedBox(height: 32),
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }
 
   Widget _buildTriviaCorner(ThemeData theme) {
-    final brightness = theme.brightness;
-
-    return Container(
+    return ClayContainer(
       padding: const EdgeInsets.all(20),
-      decoration: ClayDecoration.card(
-        color: theme.colorScheme.surfaceContainerLow,
-        brightness: brightness,
-      ),
+      color: theme.colorScheme.primaryContainer.withAlpha(80),
+      borderRadius: 24,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -184,7 +246,7 @@ class _GuideScreenState extends State<GuideScreen> {
             children: [
               Icon(
                 Icons.lightbulb_outline_rounded,
-                color: AppTheme.neonGreen,
+                color: theme.colorScheme.primary,
                 size: 24,
               ),
               const SizedBox(width: 8),
@@ -215,36 +277,29 @@ class _GuideScreenState extends State<GuideScreen> {
           const SizedBox(height: 16),
           Align(
             alignment: Alignment.centerRight,
-            child: GestureDetector(
-              onTap: _nextTrivia,
-              child: Container(
+            child: TextButton.icon(
+              onPressed: _nextTrivia,
+              icon: Icon(
+                Icons.refresh_rounded,
+                size: 18,
+                color: theme.colorScheme.primary,
+              ),
+              label: Text(
+                'Fakta Lain',
+                style: GoogleFonts.outfit(
+                  color: theme.colorScheme.primary,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 13,
+                ),
+              ),
+              style: TextButton.styleFrom(
                 padding: const EdgeInsets.symmetric(
-                  horizontal: 14,
-                  vertical: 8,
+                  horizontal: 12,
+                  vertical: 6,
                 ),
-                decoration: ClayDecoration.pill(
-                  color:
-                      AppTheme.neonGreen.withAlpha(25),
-                  brightness: brightness,
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(
-                      Icons.refresh_rounded,
-                      size: 18,
-                      color: AppTheme.neonGreen,
-                    ),
-                    const SizedBox(width: 6),
-                    Text(
-                      'Fakta Lain',
-                      style: GoogleFonts.outfit(
-                        color: AppTheme.neonGreen,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 13,
-                      ),
-                    ),
-                  ],
+                backgroundColor: theme.colorScheme.primary.withAlpha(20),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
                 ),
               ),
             ),
@@ -260,19 +315,13 @@ class _GuideScreenState extends State<GuideScreen> {
     required String details,
     required Color color,
   }) {
-    final theme = Theme.of(context);
-    final brightness = theme.brightness;
-
-    return Container(
-      decoration: ClayDecoration.card(
-        color: color.withAlpha(
-          brightness == Brightness.light ? 18 : 25,
-        ),
-        brightness: brightness,
-      ),
-      child: Theme(
-        data: ThemeData(useMaterial3: true)
-            .copyWith(dividerColor: Colors.transparent),
+    return Theme(
+      data: ThemeData(
+        useMaterial3: true,
+      ).copyWith(dividerColor: Colors.transparent),
+      child: ClayContainer(
+        borderRadius: 20,
+        color: color.withAlpha(15),
         child: ExpansionTile(
           collapsedIconColor: color,
           iconColor: color,
@@ -340,23 +389,20 @@ class _GuideScreenState extends State<GuideScreen> {
     final tips = [
       {
         'title': 'Bawa Tas Belanja',
-        'desc': 'Hindari tas plastik kresek dengan '
-            'selalu siap sedia "Tas Belanja" kain lipat '
-            'di bagasi motor Anda.',
+        'desc':
+            'Hindari tas plastik kresek dengan selalu siap sedia "Tas Belanja" kain lipat di bagasi motor Anda.',
         'icon': Icons.shopping_bag_outlined,
       },
       {
         'title': 'Pilah Dari Sumber',
-        'desc': 'Sediakan 3 wadah terpisah langsung di '
-            'dapur Anda. Pemilahan sejak dini '
-            'mempermudah petugas kebersihan.',
+        'desc':
+            'Sediakan 3 wadah terpisah langsung di dapur Anda. Pemilahan sejak dini mempermudah petugas kebersihan.',
         'icon': Icons.layers_outlined,
       },
       {
         'title': 'Bilas Wadah Plastik',
-        'desc': 'Kemasan yogurt/susu kotor berbau busuk '
-            'merusak ribuan kertas/kardus lain. Bilas '
-            'cepat sebelum dibuang!',
+        'desc':
+            'Kemasan yogurt/susu kotor berbau busuk merusak ribuan kertas/kardus lain. Bilas cepat sebelum dibuang!',
         'icon': Icons.cleaning_services_outlined,
       },
     ];
@@ -368,16 +414,12 @@ class _GuideScreenState extends State<GuideScreen> {
         itemCount: tips.length,
         itemBuilder: (context, index) {
           final tip = tips[index];
-          return Container(
+          return ClayContainer(
             width: 250,
             margin: const EdgeInsets.only(right: 14),
             padding: const EdgeInsets.all(16),
-            decoration: ClayDecoration.card(
-              color:
-                  theme.colorScheme.surfaceContainerLow,
-              brightness: brightness,
-              radius: 22,
-            ),
+            color: theme.colorScheme.surfaceContainerLow,
+            borderRadius: 20,
             child: Row(
               crossAxisAlignment:
                   CrossAxisAlignment.start,
@@ -395,6 +437,11 @@ class _GuideScreenState extends State<GuideScreen> {
                   child: Icon(
                     tip['icon'] as IconData,
                     color: AppTheme.neonGreen,
+                    size: 22,
+                  ),
+                  child: Icon(
+                    tip['icon'] as IconData,
+                    color: theme.colorScheme.secondary,
                     size: 22,
                   ),
                 ),

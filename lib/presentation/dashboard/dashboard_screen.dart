@@ -5,8 +5,9 @@ import '../home/home_screen.dart';
 import '../history/history_screen.dart';
 import '../guide/guide_screen.dart';
 import '../profile/profile_screen.dart';
-import '../theme/app_theme.dart';
-import '../theme/clay_decoration.dart';
+import '../widgets/clay_container.dart';
+import '../../providers/settings_provider.dart';
+import '../../utils/localization.dart';
 
 /// Root dashboard with a claymorphism-styled bottom nav.
 class DashboardScreen extends ConsumerStatefulWidget {
@@ -31,60 +32,59 @@ class _DashboardScreenState
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final brightness = theme.brightness;
+    final settingsAsync = ref.watch(settingsProvider);
+    final language = settingsAsync.value?.language ?? AppLanguage.id;
+    final localizations = AppLocalizations(language);
 
     return Scaffold(
+      extendBody: true,
       body: AnimatedSwitcher(
         duration: const Duration(milliseconds: 300),
         transitionBuilder: (child, animation) {
-          return FadeTransition(
-            opacity: animation,
-            child: child,
-          );
+          return FadeTransition(opacity: animation, child: child);
         },
         child: _screens[_currentIndex],
       ),
-      bottomNavigationBar: Container(
-        decoration: ClayDecoration.card(
-          color: theme.colorScheme.surfaceContainerLow,
-          brightness: brightness,
-          radius: 0,
-        ).copyWith(
-          borderRadius: const BorderRadius.vertical(
-            top: Radius.circular(28),
-          ),
-        ),
-        child: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: 16.0,
-              vertical: 10.0,
-            ),
-            child: Row(
-              mainAxisAlignment:
-                  MainAxisAlignment.spaceAround,
-              children: [
-                _buildNavItem(
-                  index: 0,
-                  icon: Icons.dashboard_rounded,
-                  label: 'Dasbor',
-                ),
-                _buildNavItem(
-                  index: 1,
-                  icon: Icons.qr_code_scanner_rounded,
-                  label: 'Scan',
-                ),
-                _buildNavItem(
-                  index: 2,
-                  icon: Icons.eco_rounded,
-                  label: 'Panduan',
-                ),
-                _buildNavItem(
-                  index: 3,
-                  icon: Icons.person_rounded,
-                  label: 'Profil',
-                ),
-              ],
+      bottomNavigationBar: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(16.0, 0.0, 16.0, 12.0),
+          child: ClayContainer(
+            borderRadius: 24,
+            spread: 4,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 8.0,
+                vertical: 8.0,
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: [
+                  _buildNavItem(
+                    index: 0,
+                    icon: Icons.dashboard_rounded,
+                    label: localizations.get('dasbor'),
+                    color: theme.colorScheme.primary,
+                  ),
+                  _buildNavItem(
+                    index: 1,
+                    icon: Icons.qr_code_scanner_rounded,
+                    label: localizations.get('scan'),
+                    color: theme.colorScheme.secondary,
+                  ),
+                  _buildNavItem(
+                    index: 2,
+                    icon: Icons.eco_rounded,
+                    label: localizations.get('panduan'),
+                    color: const Color(0xFF81C784), // Soft Emerald
+                  ),
+                  _buildNavItem(
+                    index: 3,
+                    icon: Icons.person_rounded,
+                    label: localizations.get('profil'),
+                    color: const Color(0xFFBA68C8), // Soft Purple
+                  ),
+                ],
+              ),
             ),
           ),
         ),
