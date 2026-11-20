@@ -50,10 +50,7 @@ class ClassifierService {
         ),
       );
 
-  Future<ClassificationResult> classify(
-    File image, {
-    String? userContext,
-  }) async {
+  Future<ClassificationResult> classify(File image, {String? userContext}) async {
     final imageBytes = await image.readAsBytes();
 
     final prompt = [

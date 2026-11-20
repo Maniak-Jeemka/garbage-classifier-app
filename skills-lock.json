@@ -1,10 +1,17 @@
 {
-  "version": 1,
+  "version": 2,
   "skills": {
+    "ponytail": {
+      "source": "DietrichGebert/ponytail",
+      "commit": "96608e078b2d5ea607c5c3b8b5a54d1c1fba6846",
+      "sourceType": "github",
+      "skillPath": "skills/ponytail/SKILL.md",
+      "computedHash": "56d72677aca02689ac89bd48734e8c19b40ab86716d1257eaf5f1238b43cda6b"
+    },
     "riverpod-best-practices": {
       "source": "wahyubucil/agents",
       "sourceType": "github",
-      "computedHash": "dbb78905cbd8c85a2e27b915e8420c575141cd86e54a0f77d67319b37492cd2b"
+      "computedHash": "df1a5f9a26db3d256ba423a59110b6f23ed0fbaffc4769210df2cbf67be6e2eb"
     }
   }
 }

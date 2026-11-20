@@ -1,62 +1,39 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'dart:convert';
+import 'dart:io';
+import 'package:path_provider/path_provider.dart';
 import '../models/scan_record.dart';
 
 class HistoryService {
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-
-  CollectionReference<Map<String, dynamic>> _historyRef(String uid) {
-    return _firestore.collection('users').doc(uid).collection('history');
+  Future<File> get _localFile async {
+    final directory = await getApplicationDocumentsDirectory();
+    final path = '${directory.path}/bali_waste_classifier_history.json';
+    return File(path);
   }
 
-  Future<List<ScanRecord>> loadHistory(String uid) async {
+  Future<List<ScanRecord>> loadHistory() async {
     try {
-      final querySnapshot = await _historyRef(uid)
-          .orderBy('timestamp', descending: true)
-          .get()
-          .timeout(const Duration(seconds: 5));
-
-      return querySnapshot.docs
-          .map((doc) => ScanRecord.fromJson(doc.data()))
+      final file = await _localFile;
+      if (!await file.exists()) {
+        return [];
+      }
+      final contents = await file.readAsString();
+      final List<dynamic> jsonList = jsonDecode(contents) as List<dynamic>;
+      return jsonList
+          .map((json) => ScanRecord.fromJson(json as Map<String, dynamic>))
           .toList();
     } catch (e) {
-      // Return empty list or propagate the error depending on design
+      // In case of error, default to empty list
       return [];
     }
   }
 
-  Future<void> addRecord(String uid, ScanRecord record) async {
+  Future<void> saveHistory(List<ScanRecord> history) async {
     try {
-      await _historyRef(
-        uid,
-      ).doc(record.id).set(record.toJson()).timeout(const Duration(seconds: 5));
+      final file = await _localFile;
+      final jsonList = history.map((record) => record.toJson()).toList();
+      await file.writeAsString(jsonEncode(jsonList));
     } catch (e) {
-      throw Exception('Failed to save scan record: $e');
-    }
-  }
-
-  Future<void> deleteRecord(String uid, String id) async {
-    try {
-      await _historyRef(
-        uid,
-      ).doc(id).delete().timeout(const Duration(seconds: 5));
-    } catch (e) {
-      throw Exception('Failed to delete scan record: $e');
-    }
-  }
-
-  Future<void> clearHistory(String uid) async {
-    try {
-      final querySnapshot = await _historyRef(
-        uid,
-      ).get().timeout(const Duration(seconds: 5));
-
-      final batch = _firestore.batch();
-      for (final doc in querySnapshot.docs) {
-        batch.delete(doc.reference);
-      }
-      await batch.commit().timeout(const Duration(seconds: 5));
-    } catch (e) {
-      throw Exception('Failed to clear scan history: $e');
+      // Fail silently or log
     }
   }
 }

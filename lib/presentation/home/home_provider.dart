@@ -8,7 +8,11 @@ class HomeState {
   final String optionalContext;
   final bool isLoading;
 
-  HomeState({this.image, this.optionalContext = '', this.isLoading = false});
+  HomeState({
+    this.image,
+    this.optionalContext = '',
+    this.isLoading = false,
+  });
 
   HomeState copyWith({
     XFile? image,

@@ -7,8 +7,6 @@ part 'classifier_provider.g.dart';
 @riverpod
 ClassifierService classifier(Ref ref) {
   final apiKey = dotenv.env['GEMINI_API_KEY'];
-  print('GEMINI API KEY: $apiKey');
-
   if (apiKey == null) {
     throw Exception('GEMINI_API_KEY not found in .env');
   }

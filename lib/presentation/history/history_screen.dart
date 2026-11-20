@@ -4,40 +4,28 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../models/scan_record.dart';
 import '../../providers/history_provider.dart';
-import '../../providers/settings_provider.dart';
-import '../../utils/localization.dart';
 import '../theme/app_theme.dart';
-import '../widgets/clay_container.dart';
-import '../widgets/clay_text_field.dart';
 
-/// Displays the user's classification history with
-/// search, filters, and ecological impact stats.
 class HistoryScreen extends ConsumerStatefulWidget {
   const HistoryScreen({super.key});
 
   @override
-  ConsumerState<HistoryScreen> createState() =>
-      _HistoryScreenState();
+  ConsumerState<HistoryScreen> createState() => _HistoryScreenState();
 }
 
-class _HistoryScreenState
-    extends ConsumerState<HistoryScreen> {
+class _HistoryScreenState extends ConsumerState<HistoryScreen> {
   String _searchQuery = '';
-  // Stable category key; never changes with language.
-  String _activeCategoryKey = 'all';
+  String _activeFilter = 'Semua';
 
   @override
   Widget build(BuildContext context) {
     final historyAsync = ref.watch(historyProvider);
-    final settingsAsync = ref.watch(settingsProvider);
-    final language = settingsAsync.value?.language ?? AppLanguage.id;
-    final localizations = AppLocalizations(language);
     final theme = Theme.of(context);
 
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          localizations.get('riwayat_scan'),
+          'Riwayat Klasifikasi',
           style: GoogleFonts.outfit(
             fontWeight: FontWeight.bold,
             color: theme.colorScheme.onSurface,
@@ -46,15 +34,15 @@ class _HistoryScreenState
         actions: [
           IconButton(
             icon: const Icon(Icons.delete_sweep_rounded),
-            tooltip: localizations.get('hapus_semua'),
-            onPressed: () => _confirmClearHistory(context, localizations),
+            tooltip: 'Hapus Semua',
+            onPressed: () => _confirmClearHistory(context),
           ),
         ],
       ),
       body: historyAsync.when(
         data: (records) {
           final filteredRecords = _filterRecords(records);
-
+          
           return Container(
             decoration: BoxDecoration(
               gradient: LinearGradient(
@@ -69,123 +57,105 @@ class _HistoryScreenState
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                _buildImpactStatsCard(records, localizations),
-                _buildSearchAndFilters(theme, localizations),
+                _buildImpactStatsCard(records),
+                _buildSearchAndFilters(theme),
                 Expanded(
                   child: filteredRecords.isEmpty
-                      ? _buildEmptyState(theme, records.isEmpty, localizations)
+                      ? _buildEmptyState(theme, records.isEmpty)
                       : ListView.builder(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 24,
-                            vertical: 8,
-                          ),
+                          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
                           itemCount: filteredRecords.length,
                           itemBuilder: (context, index) {
-                            return _buildHistoryItem(
-                              context,
-                              filteredRecords[index],
-                              localizations,
-                            );
+                            return _buildHistoryItem(context, filteredRecords[index]);
                           },
                         ),
-                        itemCount:
-                            filteredRecords.length,
-                        itemBuilder: (context, index) {
-                          return _buildHistoryItem(
-                            context,
-                            filteredRecords[index],
-                          );
-                        },
-                      ),
-              ),
-            ],
+                ),
+              ],
+            ),
           );
         },
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (error, _) =>
-            Center(child: Text('Terjadi kesalahan memuat riwayat: $error')),
+        error: (error, _) => Center(
+          child: Text('Terjadi kesalahan memuat riwayat: $error'),
+        ),
       ),
     );
   }
 
-  List<ScanRecord> _filterRecords(
-    List<ScanRecord> records,
-  ) {
+  List<ScanRecord> _filterRecords(List<ScanRecord> records) {
     return records.where((record) {
-      final matchesSearch = record.result.subcategory.toLowerCase().contains(
-        _searchQuery.toLowerCase(),
-      );
-
-      final matchesFilter =
-          _activeCategoryKey == 'all' ||
-          record.result.category.toLowerCase() == _activeCategoryKey;
-
+      final matchesSearch = record.result.subcategory
+          .toLowerCase()
+          .contains(_searchQuery.toLowerCase());
+      
+      final matchesFilter = _activeFilter == 'Semua' ||
+          record.result.category.toLowerCase() == _activeFilter.toLowerCase();
+      
       return matchesSearch && matchesFilter;
     }).toList();
   }
 
-  Widget _buildImpactStatsCard(
-    List<ScanRecord> records,
-    AppLocalizations localizations,
-  ) {
+  Widget _buildImpactStatsCard(List<ScanRecord> records) {
     final theme = Theme.of(context);
-    final brightness = theme.brightness;
     final totalScans = records.length;
-
-    final organicCount = records
-        .where((r) => r.result.category.toLowerCase() == 'organik')
-        .length;
-    final nonOrganicCount = records
-        .where((r) => r.result.category.toLowerCase() == 'non-organik')
-        .length;
-
+    
+    // Simple calculations for gamified ecological impact stats
+    final organicCount = records.where((r) => r.result.category.toLowerCase() == 'organik').length;
+    final nonOrganicCount = records.where((r) => r.result.category.toLowerCase() == 'non-organik').length;
+    
+    // Estimate: organic average weight 0.15kg, recyclables average count
     final estCompostKg = (organicCount * 0.15).toStringAsFixed(1);
-
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(24, 12, 24, 16),
-      child: ClayContainer(
-        borderRadius: 24,
-        color: theme.colorScheme.primary.withAlpha(220),
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                const Icon(Icons.stars_rounded, color: Colors.white, size: 24),
-                const SizedBox(width: 8),
-                Text(
-                  localizations.get('dampak_lingkungan'),
-                  style: GoogleFonts.outfit(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                _buildStatDetail(
-                  totalScans.toString(),
-                  localizations.get('sampah_dipilah'),
-                ),
-                Container(width: 1, height: 32, color: Colors.white24),
-                _buildStatDetail(
-                  '${estCompostKg}kg',
-                  localizations.get('potensi_kompos'),
-                ),
-                Container(width: 1, height: 32, color: Colors.white24),
-                _buildStatDetail(
-                  nonOrganicCount.toString(),
-                  localizations.get('didaur_ulang'),
-                ),
-              ],
-            ),
+    
+    return Container(
+      margin: const EdgeInsets.fromLTRB(24, 12, 24, 16),
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            theme.colorScheme.primary.withAlpha(200),
+            theme.colorScheme.secondary.withAlpha(200),
           ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
         ),
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: [
+          BoxShadow(
+            color: theme.colorScheme.primary.withAlpha(40),
+            blurRadius: 12,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Icon(Icons.stars_rounded, color: Colors.white, size: 24),
+              const SizedBox(width: 8),
+              Text(
+                'Dampak Lingkungan Anda',
+                style: GoogleFonts.outfit(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              _buildStatDetail(totalScans.toString(), 'Sampah Dipilah'),
+              Container(width: 1, height: 32, color: Colors.white24),
+              _buildStatDetail('${estCompostKg}kg', 'Potensi Kompos'),
+              Container(width: 1, height: 32, color: Colors.white24),
+              _buildStatDetail(nonOrganicCount.toString(), 'Didaur Ulang'),
+            ],
+          ),
+        ],
       ),
     );
   }
@@ -198,7 +168,7 @@ class _HistoryScreenState
           style: GoogleFonts.outfit(
             fontSize: 22,
             fontWeight: FontWeight.bold,
-            color: const Color(0xFF0A1F00),
+            color: Colors.white,
           ),
         ),
         const SizedBox(height: 2),
@@ -206,128 +176,100 @@ class _HistoryScreenState
           label,
           style: GoogleFonts.outfit(
             fontSize: 11,
-            color:
-                const Color(0xFF0A1F00).withAlpha(180),
+            color: Colors.white.withAlpha(200),
           ),
         ),
       ],
     );
   }
 
-  Widget _buildSearchAndFilters(
-    ThemeData theme,
-    AppLocalizations localizations,
-  ) {
-    // Maps stable key → translated label.
-    final filters = <String, String>{
-      'all': localizations.get('semua'),
-      'organik': localizations.get('organik'),
-      'non-organik': localizations.get('non_organik'),
-      'residu': localizations.get('residu'),
-    };
-
+  Widget _buildSearchAndFilters(ThemeData theme) {
     return Column(
       children: [
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 24.0),
-          child: ClayTextField(
+          child: TextField(
             onChanged: (val) {
               setState(() {
                 _searchQuery = val;
               });
             },
-            hintText: localizations.get('cari_sampah'),
-            icon: Icons.search,
+            style: GoogleFonts.outfit(fontSize: 14),
+            decoration: InputDecoration(
+              hintText: 'Cari sampah...',
+              prefixIcon: const Icon(Icons.search),
+              filled: true,
+              fillColor: theme.colorScheme.surfaceContainerLow,
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(16),
+                borderSide: BorderSide.none,
+              ),
+              contentPadding: const EdgeInsets.symmetric(vertical: 0),
+            ),
           ),
         ),
-        const SizedBox(height: 16),
+        const SizedBox(height: 12),
         SingleChildScrollView(
           scrollDirection: Axis.horizontal,
-          padding: const EdgeInsets.symmetric(
-            horizontal: 24,
-          ),
+          padding: const EdgeInsets.symmetric(horizontal: 24),
           child: Row(
-            children: filters.entries.map((entry) {
-              final isSelected = _activeCategoryKey == entry.key;
+            children: ['Semua', 'Organik', 'Non-Organik', 'Residu'].map((filter) {
+              final isSelected = _activeFilter == filter;
               return Padding(
                 padding: const EdgeInsets.only(right: 8.0),
-                child: ClayContainer(
-                  borderRadius: 14,
-                  depth: !isSelected,
-                  spread: isSelected ? 2 : 4,
-                  color: isSelected
-                      ? theme.colorScheme.primary.withAlpha(200)
-                      : theme.colorScheme.surfaceContainerLow,
-                  onTap: () {
+                child: FilterChip(
+                  label: Text(
+                    filter,
+                    style: GoogleFonts.outfit(
+                      fontSize: 12,
+                      fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                    ),
+                  ),
+                  selected: isSelected,
+                  onSelected: (selected) {
                     setState(() {
-                      _activeCategoryKey = entry.key;
+                      _activeFilter = filter;
                     });
                   },
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 8,
-                    ),
-                    child: Text(
-                      entry.value,
-                      style: GoogleFonts.outfit(
-                        fontSize: 12,
-                        color: isSelected
-                            ? (theme.brightness == Brightness.dark
-                                  ? Colors.black87
-                                  : Colors.white)
-                            : theme.colorScheme.onSurface,
-                        fontWeight: isSelected
-                            ? FontWeight.bold
-                            : FontWeight.normal,
-                      ),
-                    ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
                   ),
                 ),
               );
             }).toList(),
           ),
         ),
-        const SizedBox(height: 16),
+        const SizedBox(height: 12),
       ],
     );
   }
 
-  Widget _buildEmptyState(
-    ThemeData theme,
-    bool isHistoryFullyEmpty,
-    AppLocalizations localizations,
-  ) {
+  Widget _buildEmptyState(ThemeData theme, bool isHistoryFullyEmpty) {
     return Center(
       child: Padding(
-        padding: const EdgeInsets.symmetric(
-          horizontal: 32.0,
-        ),
+        padding: const EdgeInsets.symmetric(horizontal: 32.0),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Container(
               padding: const EdgeInsets.all(24),
-              decoration: ClayDecoration.circle(
-                color: theme
-                    .colorScheme.surfaceContainerHigh,
-                brightness: brightness,
+              decoration: BoxDecoration(
+                color: theme.colorScheme.surfaceContainerHigh.withAlpha(128),
+                shape: BoxShape.circle,
               ),
               child: Icon(
                 isHistoryFullyEmpty
-                    ? Icons
-                        .center_focus_weak_rounded
+                    ? Icons.center_focus_weak_rounded
                     : Icons.search_off_rounded,
                 size: 64,
-                color:
-                    AppTheme.neonGreen.withAlpha(150),
+                color: theme.colorScheme.primary.withAlpha(150),
               ),
             ),
             const SizedBox(height: 20),
             Text(
               isHistoryFullyEmpty
-                  ? localizations.get('belum_ada_pemindaian')
-                  : localizations.get('hasil_tidak_ditemukan'),
+                  ? 'Belum Ada Pemindaian'
+                  : 'Hasil Tidak Ditemukan',
               style: GoogleFonts.outfit(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
@@ -336,13 +278,12 @@ class _HistoryScreenState
             const SizedBox(height: 8),
             Text(
               isHistoryFullyEmpty
-                  ? localizations.get('mulai_pindai_hint')
-                  : localizations.get('ubah_kata_kunci_hint'),
+                  ? 'Mulai pindai foto sampah Anda di tab Pindai untuk melihat catatan riwayat di sini.'
+                  : 'Cobalah mengubah kata kunci pencarian Anda atau ganti filter kategori.',
               textAlign: TextAlign.center,
               style: GoogleFonts.outfit(
                 fontSize: 13.5,
-                color:
-                    theme.colorScheme.onSurfaceVariant,
+                color: theme.colorScheme.onSurfaceVariant,
               ),
             ),
           ],
@@ -351,19 +292,13 @@ class _HistoryScreenState
     );
   }
 
-  Widget _buildHistoryItem(
-    BuildContext context,
-    ScanRecord record,
-    AppLocalizations localizations,
-  ) {
+  Widget _buildHistoryItem(BuildContext context, ScanRecord record) {
     final theme = Theme.of(context);
-    final brightness = theme.brightness;
     final binColors = theme.extension<BinColors>();
 
     Color getCategoryColor() {
       if (binColors != null) {
-        switch (
-            record.result.category.toLowerCase()) {
+        switch (record.result.category.toLowerCase()) {
           case 'organik':
             return binColors.organik;
           case 'non-organik':
@@ -372,11 +307,11 @@ class _HistoryScreenState
             return binColors.residu;
         }
       }
-      return AppTheme.neonGreen;
+      return theme.colorScheme.primary;
     }
 
     final catColor = getCategoryColor();
-    final timeStr = _formatTimestamp(record.timestamp, localizations);
+    final timeStr = _formatTimestamp(record.timestamp);
 
     return Dismissible(
       key: Key(record.id),
@@ -387,27 +322,19 @@ class _HistoryScreenState
         margin: const EdgeInsets.only(bottom: 12),
         decoration: BoxDecoration(
           color: theme.colorScheme.error,
-          borderRadius: BorderRadius.circular(24),
+          borderRadius: BorderRadius.circular(20),
         ),
-        child: const Icon(
-          Icons.delete_outline,
-          color: Colors.white,
-          size: 28,
-        ),
+        child: const Icon(Icons.delete_outline, color: Colors.white, size: 28),
       ),
       onDismissed: (direction) {
-        ref
-            .read(historyProvider.notifier)
-            .deleteRecord(record.id);
+        ref.read(historyProvider.notifier).deleteRecord(record.id);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(localizations.get('catatan_dihapus')),
+            content: Text('Catatan dihapus'),
             action: SnackBarAction(
-              label: localizations.get('batal'),
+              label: 'Batal',
               onPressed: () {
-                ref
-                    .read(historyProvider.notifier)
-                    .addRecord(record);
+                ref.read(historyProvider.notifier).addRecord(record);
               },
             ),
           ),
@@ -415,104 +342,98 @@ class _HistoryScreenState
       },
       child: Container(
         margin: const EdgeInsets.only(bottom: 12),
-        child: ClayContainer(
-          borderRadius: 20,
+        child: Card(
+          elevation: 0,
           color: theme.colorScheme.surfaceContainerLow,
-          onTap: () => _showRecordDetails(context, record),
-          child: Padding(
-            padding: const EdgeInsets.all(12.0),
-            child: Row(
-              children: [
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(14),
-                  child: Image.file(
-                    File(record.imagePath),
-                    width: 64,
-                    height: 64,
-                    fit: BoxFit.cover,
-                    errorBuilder: (context, _, _) {
-                      return Container(
-                        width: 64,
-                        height: 64,
-                        color: theme.colorScheme.surfaceContainerHighest,
-                        child: Icon(
-                          Icons.image_not_supported_rounded,
-                          color: theme.colorScheme.onSurfaceVariant,
-                        ),
-                      );
-                    },
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+            side: BorderSide(color: theme.colorScheme.outlineVariant.withAlpha(40)),
+          ),
+          child: InkWell(
+            onTap: () => _showRecordDetails(context, record),
+            borderRadius: BorderRadius.circular(20),
+            child: Padding(
+              padding: const EdgeInsets.all(12.0),
+              child: Row(
+                children: [
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(14),
+                    child: Image.file(
+                      File(record.imagePath),
+                      width: 64,
+                      height: 64,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, _, _) {
+                        return Container(
+                          width: 64,
+                          height: 64,
+                          color: theme.colorScheme.surfaceContainerHighest,
+                          child: Icon(Icons.image_not_supported_rounded, color: theme.colorScheme.onSurfaceVariant),
+                        );
+                      },
+                    ),
                   ),
-                ),
-                const SizedBox(width: 14),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 8,
-                              vertical: 2,
-                            ),
-                            decoration: BoxDecoration(
-                              color: catColor.withAlpha(25),
-                              borderRadius: BorderRadius.circular(6),
-                            ),
-                            child: Text(
-                              record.result.category.toUpperCase(),
-                              style: GoogleFonts.outfit(
-                                fontSize: 9,
-                                fontWeight: FontWeight.bold,
-                                color: catColor,
+                  const SizedBox(width: 14),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                              decoration: BoxDecoration(
+                                color: catColor.withAlpha(25),
+                                borderRadius: BorderRadius.circular(6),
+                              ),
+                              child: Text(
+                                record.result.category.toUpperCase(),
+                                style: GoogleFonts.outfit(
+                                  fontSize: 9,
+                                  fontWeight: FontWeight.bold,
+                                  color: catColor,
+                                ),
                               ),
                             ),
-                          ),
-                          const Spacer(),
-                          Text(
-                            timeStr,
-                            style: GoogleFonts.outfit(
-                              fontSize: 11,
-                              color: theme.colorScheme.onSurfaceVariant
-                                  .withAlpha(150),
+                            const Spacer(),
+                            Text(
+                              timeStr,
+                              style: GoogleFonts.outfit(
+                                fontSize: 11,
+                                color: theme.colorScheme.onSurfaceVariant.withAlpha(150),
+                              ),
                             ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 6),
-                      Text(
-                        record.result.subcategory,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: GoogleFonts.outfit(
-                          fontSize: 15,
-                          fontWeight: FontWeight.bold,
+                          ],
                         ),
-                      ),
-                      const SizedBox(height: 4),
-                      Row(
-                        children: [
-                          Icon(
-                            Icons.thumb_up_alt_outlined,
-                            color: theme.colorScheme.onSurfaceVariant.withAlpha(
-                              120,
-                            ),
-                            size: 12,
+                        const SizedBox(height: 6),
+                        Text(
+                          record.result.subcategory,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: GoogleFonts.outfit(
+                            fontSize: 15,
+                            fontWeight: FontWeight.bold,
                           ),
-                          const SizedBox(width: 4),
-                          Text(
-                            'Akurasi: ${(record.result.confidence * 100).toStringAsFixed(0)}%',
-                            style: GoogleFonts.outfit(
-                              fontSize: 11,
-                              color: theme.colorScheme.onSurfaceVariant,
+                        ),
+                        const SizedBox(height: 4),
+                        Row(
+                          children: [
+                            Icon(Icons.thumb_up_alt_outlined, color: theme.colorScheme.onSurfaceVariant.withAlpha(120), size: 12),
+                            const SizedBox(width: 4),
+                            Text(
+                              'Akurasi: ${(record.result.confidence * 100).toStringAsFixed(0)}%',
+                              style: GoogleFonts.outfit(
+                                fontSize: 11,
+                                color: theme.colorScheme.onSurfaceVariant,
+                              ),
                             ),
-                          ),
-                        ],
-                      ),
-                    ],
+                          ],
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ),
@@ -520,44 +441,26 @@ class _HistoryScreenState
     );
   }
 
-  String _formatTimestamp(DateTime dt, AppLocalizations localizations) {
+  String _formatTimestamp(DateTime dt) {
     final now = DateTime.now();
     final diff = now.difference(dt);
     if (diff.inMinutes < 60) {
-      return '${diff.inMinutes} ${localizations.get('menit_lalu')}';
+      return '${diff.inMinutes} menit lalu';
     } else if (diff.inHours < 24) {
-      return '${diff.inHours} ${localizations.get('jam_lalu')}';
+      return '${diff.inHours} jam lalu';
     } else {
-      final months = [
-        'Jan',
-        'Feb',
-        'Mar',
-        'Apr',
-        'Mei',
-        'Jun',
-        'Jul',
-        'Agu',
-        'Sep',
-        'Okt',
-        'Nov',
-        'Des',
-      ];
+      final months = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
       return '${dt.day} ${months[dt.month - 1]}';
     }
   }
 
-  void _showRecordDetails(
-    BuildContext context,
-    ScanRecord record,
-  ) {
+  void _showRecordDetails(BuildContext context, ScanRecord record) {
     final theme = Theme.of(context);
-    final brightness = theme.brightness;
     final binColors = theme.extension<BinColors>();
 
     Color getCategoryColor() {
       if (binColors != null) {
-        switch (
-            record.result.category.toLowerCase()) {
+        switch (record.result.category.toLowerCase()) {
           case 'organik':
             return binColors.organik;
           case 'non-organik':
@@ -566,7 +469,7 @@ class _HistoryScreenState
             return binColors.residu;
         }
       }
-      return AppTheme.neonGreen;
+      return theme.colorScheme.primary;
     }
 
     final catColor = getCategoryColor();
@@ -576,32 +479,22 @@ class _HistoryScreenState
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (context) => Container(
-        height:
-            MediaQuery.of(context).size.height * 0.8,
-        decoration: ClayDecoration.elevated(
+        height: MediaQuery.of(context).size.height * 0.8,
+        decoration: BoxDecoration(
           color: theme.colorScheme.surface,
-          brightness: brightness,
-        ).copyWith(
-          borderRadius: const BorderRadius.vertical(
-            top: Radius.circular(32),
-          ),
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
         ),
         child: Column(
-          crossAxisAlignment:
-              CrossAxisAlignment.stretch,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Center(
               child: Container(
                 width: 48,
                 height: 4,
-                margin: const EdgeInsets.symmetric(
-                  vertical: 12,
-                ),
+                margin: const EdgeInsets.symmetric(vertical: 12),
                 decoration: BoxDecoration(
-                  color:
-                      theme.colorScheme.outlineVariant,
-                  borderRadius:
-                      BorderRadius.circular(2),
+                  color: theme.colorScheme.outlineVariant,
+                  borderRadius: BorderRadius.circular(2),
                 ),
               ),
             ),
@@ -609,26 +502,19 @@ class _HistoryScreenState
               child: SingleChildScrollView(
                 padding: const EdgeInsets.all(24.0),
                 child: Column(
-                  crossAxisAlignment:
-                      CrossAxisAlignment.stretch,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     ClipRRect(
-                      borderRadius:
-                          BorderRadius.circular(24),
+                      borderRadius: BorderRadius.circular(20),
                       child: Image.file(
                         File(record.imagePath),
                         height: 220,
                         fit: BoxFit.cover,
-                        errorBuilder:
-                            (context, _, _) {
+                        errorBuilder: (context, _, _) {
                           return Container(
                             height: 180,
                             color: theme.colorScheme.surfaceContainerHighest,
-                            child: Icon(
-                              Icons.image_not_supported_rounded,
-                              color: theme.colorScheme.onSurfaceVariant,
-                              size: 48,
-                            ),
+                            child: Icon(Icons.image_not_supported_rounded, color: theme.colorScheme.onSurfaceVariant, size: 48),
                           );
                         },
                       ),
@@ -637,24 +523,15 @@ class _HistoryScreenState
                     Row(
                       children: [
                         Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 10,
-                            vertical: 4,
-                          ),
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                           decoration: BoxDecoration(
-                            color: catColor
-                                .withAlpha(25),
-                            borderRadius:
-                                BorderRadius.circular(
-                              10,
-                            ),
+                            color: catColor.withAlpha(25),
+                            borderRadius: BorderRadius.circular(8),
                           ),
                           child: Text(
-                            record.result.category
-                                .toUpperCase(),
+                            record.result.category.toUpperCase(),
                             style: GoogleFonts.outfit(
-                              fontWeight:
-                                  FontWeight.bold,
+                              fontWeight: FontWeight.bold,
                               fontSize: 12,
                               color: catColor,
                             ),
@@ -678,16 +555,9 @@ class _HistoryScreenState
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                    Padding(
-                      padding:
-                          const EdgeInsets.symmetric(
-                        vertical: 16.0,
-                      ),
-                      child: Divider(
-                        color: theme
-                            .colorScheme.outlineVariant
-                            .withAlpha(60),
-                      ),
+                    const Padding(
+                      padding: EdgeInsets.symmetric(vertical: 16.0),
+                      child: Divider(),
                     ),
                     Text(
                       'Langkah Pengelolaan:',
@@ -697,35 +567,29 @@ class _HistoryScreenState
                       ),
                     ),
                     const SizedBox(height: 10),
-                    ...record.result.instructions.map(
-                      (step) => Padding(
-                        padding: const EdgeInsets.only(bottom: 8),
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Padding(
-                              padding: const EdgeInsets.only(top: 3.0),
-                              child: Icon(
-                                Icons.check_circle_outline,
-                                color: catColor,
-                                size: 18,
+                    ...record.result.instructions.map((step) => Padding(
+                          padding: const EdgeInsets.only(bottom: 8),
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Padding(
+                                padding: const EdgeInsets.only(top: 3.0),
+                                child: Icon(Icons.check_circle_outline, color: catColor, size: 18),
                               ),
-                            ),
-                            const SizedBox(width: 10),
-                            Expanded(
-                              child: Text(
-                                step,
-                                style: GoogleFonts.outfit(
-                                  fontSize: 14.5,
-                                  height: 1.4,
-                                  color: theme.colorScheme.onSurface,
+                              const SizedBox(width: 10),
+                              Expanded(
+                                child: Text(
+                                  step,
+                                  style: GoogleFonts.outfit(
+                                    fontSize: 14.5,
+                                    height: 1.4,
+                                    color: theme.colorScheme.onSurface,
+                                  ),
                                 ),
                               ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
+                            ],
+                          ),
+                        )),
                     const SizedBox(height: 24),
                   ],
                 ),
@@ -737,47 +601,36 @@ class _HistoryScreenState
     );
   }
 
-  void _confirmClearHistory(
-    BuildContext context,
-    AppLocalizations localizations,
-  ) {
+  void _confirmClearHistory(BuildContext context) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
         title: Text(
-          localizations.get('hapus_semua_judul'),
+          'Hapus Semua Riwayat?',
           style: GoogleFonts.outfit(fontWeight: FontWeight.bold),
         ),
         content: Text(
-          localizations.get('hapus_semua_konfirmasi'),
+          'Tindakan ini akan menghapus seluruh catatan klasifikasi sampah Anda secara permanen.',
           style: GoogleFonts.outfit(),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text(
-              localizations.get('batal'),
-              style: GoogleFonts.outfit(),
-            ),
+            child: Text('Batal', style: GoogleFonts.outfit()),
           ),
           ElevatedButton(
             onPressed: () {
-              ref
-                  .read(historyProvider.notifier)
-                  .clearHistory();
+              ref.read(historyProvider.notifier).clearHistory();
               Navigator.pop(context);
             },
             style: ElevatedButton.styleFrom(
-              backgroundColor:
-                  Theme.of(context).colorScheme.error,
+              backgroundColor: Theme.of(context).colorScheme.error,
               foregroundColor: Colors.white,
             ),
-            child: Text(
-              localizations.get('hapus'),
-              style: GoogleFonts.outfit(fontWeight: FontWeight.bold),
-            ),
+            child: Text('Hapus', style: GoogleFonts.outfit(fontWeight: FontWeight.bold)),
           ),
         ],
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       ),
     );
   }
