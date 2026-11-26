@@ -20,7 +20,7 @@ final class HistoryProvider
         argument: null,
         retry: null,
         name: r'historyProvider',
-        isAutoDispose: true,
+        isAutoDispose: false,
         dependencies: null,
         $allTransitiveDependencies: null,
       );
@@ -33,7 +33,7 @@ final class HistoryProvider
   History create() => History();
 }
 
-String _$historyHash() => r'819e474c8830a1a9e3db23d1cdde4768505c0748';
+String _$historyHash() => r'ec727c0c6138df191e6bf398cfe0bc4674b9cab7';
 
 abstract class _$History extends $AsyncNotifier<List<ScanRecord>> {
   FutureOr<List<ScanRecord>> build();

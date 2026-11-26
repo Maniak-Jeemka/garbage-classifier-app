@@ -1,6 +1,13 @@
 {
   "version": 2,
   "skills": {
+    "antislop-ui": {
+      "source": "miqdadbadjuber/anti-slop",
+      "commit": "1969b459f843603ba2efbbb24e8e1bf963c889b3",
+      "sourceType": "github",
+      "skillPath": "skills/antislop-ui/SKILL.md",
+      "computedHash": "09c3efcee47866061a1609e298068941eb1d35e73eea95ae67ea2453be3951a9"
+    },
     "ponytail": {
       "source": "DietrichGebert/ponytail",
       "commit": "96608e078b2d5ea607c5c3b8b5a54d1c1fba6846",

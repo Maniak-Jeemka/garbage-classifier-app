@@ -1,8 +1,8 @@
-# Garbage Classifier — AGENTS.md
+# Re Resik — AGENTS.md
 
 ## What this project is
 
-A Flutter app that classifies waste photos into Bali's three-bin taxonomy (organik, non-organik, residu) using Gemini 2.5 Flash. State management is Riverpod. The Gemini integration uses the `google_generative_ai` package.
+A Flutter app that classifies waste photos into three-bin taxonomy (organik, non-organik, residu) using Groq. State management is Riverpod. The Groq integration calls the OpenAI-compatible chat completions API with `dart:io` `HttpClient`.
 
 # AI rules for Flutter
 

@@ -1,5 +1,5 @@
 name: workshop
-description: "A Flutter app that classifies waste photos into Bali's three-bin taxonomy (organik, non-organik, residu) using Gemini 2.5 Flash."
+description: "A Flutter app that classifies waste photos into Bali's three-bin taxonomy (organik, non-organik, residu) using Groq."
 publish_to: "none"
 version: 1.0.0+1
 
@@ -14,9 +14,9 @@ dependencies:
   flutter_riverpod: ^3.5.0
   image_picker: ^1.2.1
   google_fonts: ^8.0.2
-  google_generative_ai: ^0.4.7
   riverpod_annotation: ^4.0.8
   path_provider: ^2.1.5
+  camera: ^0.12.2
 
 dev_dependencies:
   flutter_test:

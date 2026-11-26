@@ -36,17 +36,19 @@ class Home extends _$Home {
   final _picker = ImagePicker();
 
   Future<void> pickFromGallery() async {
-    final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
+    final XFile? image = await _picker.pickImage(
+      source: ImageSource.gallery,
+      maxWidth: 1280,
+      maxHeight: 1280,
+      imageQuality: 85,
+    );
     if (image != null) {
       state = state.copyWith(image: image);
     }
   }
 
-  Future<void> takePicture() async {
-    final XFile? image = await _picker.pickImage(source: ImageSource.camera);
-    if (image != null) {
-      state = state.copyWith(image: image);
-    }
+  void setImage(XFile image) {
+    state = state.copyWith(image: image);
   }
 
   void setContext(String text) {

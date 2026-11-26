@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'presentation/home/home_screen.dart';
+import 'presentation/shell/app_shell.dart';
 import 'presentation/theme/app_theme.dart';
 
 Future<void> main() async {
@@ -26,7 +26,7 @@ class GarbageClassifierApp extends StatelessWidget {
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
       themeMode: ThemeMode.system,
-      home: const HomeScreen(),
+      home: const AppShell(),
     );
   }
 }

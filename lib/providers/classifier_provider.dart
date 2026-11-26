@@ -6,9 +6,9 @@ part 'classifier_provider.g.dart';
 
 @riverpod
 ClassifierService classifier(Ref ref) {
-  final apiKey = dotenv.env['GEMINI_API_KEY'];
+  final apiKey = dotenv.env['GROQ_API_KEY'];
   if (apiKey == null) {
-    throw Exception('GEMINI_API_KEY not found in .env');
+    throw Exception('GROQ_API_KEY not found in .env');
   }
   return ClassifierService(apiKey: apiKey);
 }
